@@ -38,12 +38,15 @@ public class MainRestController {
 
     /**
      * Method used to retrieve the transactions belonging to the user issuing the current request.
+     * @param limit The maximum amount of transactions to be fetched.
+     * @param offset The starting index to fetch transactions.
      * @return An ArrayList of Transaction belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/transactions")
-    public ArrayList<Transaction> getTransactions() {
-        return model.getTransactions(this.getSessionID());
+    public ArrayList<Transaction> getTransactions(@RequestParam(value = "limit", defaultValue = "20") String limit,
+                                                  @RequestParam(value = "offset", defaultValue = "0") String offset) {
+        return model.getTransactions(this.getSessionID(), limit, offset);
     }
 
     /**
@@ -54,8 +57,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/transactions")
-    public Transaction postTransaction(@RequestParam(value="name") String name,
-                                      @RequestParam(value="amount") String amount) {
+    public Transaction postTransaction(@RequestParam(value = "name") String name,
+                                       @RequestParam(value = "amount") String amount) {
         String sessionID = RequestContextHolder.currentRequestAttributes().getSessionId();
         return model.postTransaction(this.getSessionID(), name, amount);
     }
@@ -81,8 +84,8 @@ public class MainRestController {
     @RequestMapping(method = RequestMethod.PUT,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}")
     public Transaction putTransaction(@PathVariable String transactionID,
-                                      @RequestParam(value="name", defaultValue="") String name,
-                                      @RequestParam(value="amount", defaultValue="") String amount) {
+                                      @RequestParam(value = "name", defaultValue = "") String name,
+                                      @RequestParam(value = "amount", defaultValue = "") String amount) {
         return model.putTransaction(this.getSessionID(), transactionID, name, amount);
     }
 
@@ -105,19 +108,22 @@ public class MainRestController {
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}/assignCategory")
     public Transaction assignCategoryToTransaction(@PathVariable String transactionID,
-                                                   @RequestParam(value="categoryID") String categoryID) {
+                                                   @RequestParam(value = "categoryID") String categoryID) {
         String sessionID = RequestContextHolder.currentRequestAttributes().getSessionId();
         return model.assignCategoryToTransaction(this.getSessionID(), transactionID, categoryID);
     }
 
     /**
      * Method used to retrieve the categories belonging to the user issuing the current request.
+     * @param limit The maximum amount of categories to be fetched.
+     * @param offset The starting index to fetch categories.
      * @return An ArrayList of Category belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/categories")
-    public ArrayList<Category> getCategories() {
-        return model.getCategories(this.getSessionID());
+    public ArrayList<Category> getCategories(@RequestParam(value = "limit", defaultValue = "20") String limit,
+                                             @RequestParam(value = "offset", defaultValue = "0") String offset) {
+        return model.getCategories(this.getSessionID(), limit, offset);
     }
 
     /**
@@ -127,7 +133,7 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/categories")
-    public Category postCategory(@RequestParam(value="name") String categoryName) {
+    public Category postCategory(@RequestParam(value = "name") String categoryName) {
         String sessionID = RequestContextHolder.currentRequestAttributes().getSessionId();
         return model.postCategory(this.getSessionID(), categoryName);
     }
@@ -152,7 +158,7 @@ public class MainRestController {
     @RequestMapping(method = RequestMethod.PUT,
             value = RestControllerConstants.URI_PREFIX + "/categories/{categoryID}")
     public Category putCategory(@PathVariable String categoryID,
-                                @RequestParam(value="name", defaultValue="") String categoryName) {
+                                @RequestParam(value = "name", defaultValue = "") String categoryName) {
         return model.putCategory(this.getSessionID(), categoryID, categoryName);
     }
 

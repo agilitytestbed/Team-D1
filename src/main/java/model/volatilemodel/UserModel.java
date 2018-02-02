@@ -23,10 +23,19 @@ public class UserModel {
 
     /**
      * Method used to retrieve the transactions of this UserModel.
+     * @param limitString The maximum amount of transactions to be fetched.
+     * @param offsetString The starting index to fetch transactions.
      * @return An ArrayList of Transaction of this UserModel.
      */
-    public ArrayList<Transaction> getTransactions() {
-        return transactions;
+    public ArrayList<Transaction> getTransactions(String limitString, String offsetString) {
+        int offset = Integer.parseInt(offsetString);
+        int calculatedLimit = offset + Integer.parseInt(limitString);
+
+        ArrayList<Transaction> limitedTransactions = new ArrayList<>();
+        for (int position = offset; position < transactions.size() && position < calculatedLimit; position++) {
+            limitedTransactions.add(transactions.get(position));
+        }
+        return limitedTransactions;
     }
 
     /**
@@ -114,10 +123,19 @@ public class UserModel {
 
     /**
      * Method used to retrieve the categories of this UserModel.
+     * @param limitString The maximum amount of categories to be fetched.
+     * @param offsetString The starting index to fetch categories.
      * @return An ArrayList of Category of this UserModel.
      */
-    public ArrayList<Category> getCategories() {
-        return categories;
+    public ArrayList<Category> getCategories(String limitString, String offsetString) {
+        int offset = Integer.parseInt(offsetString);
+        int calculatedLimit = offset + Integer.parseInt(limitString);
+
+        ArrayList<Category> limitedCategories = new ArrayList<>();
+        for (int position = offset; position < categories.size() && position < calculatedLimit; position++) {
+            limitedCategories.add(categories.get(position));
+        }
+        return limitedCategories;
     }
 
     /**

@@ -40,11 +40,13 @@ public class VolatileModel implements Model {
     /**
      * Method used to retrieve the transactions belonging to a certain user.
      * @param sessionID The sessionID of the user.
+     * @param limit The maximum amount of transactions to be fetched.
+     * @param offset The starting index to fetch transactions.
      * @return An ArrayList of Transaction belonging to the user with sessionID.
      */
     @Override
-    public ArrayList<Transaction> getTransactions(String sessionID) {
-        return this.getUserModel(sessionID).getTransactions();
+    public ArrayList<Transaction> getTransactions(String sessionID, String limit, String offset) {
+        return this.getUserModel(sessionID).getTransactions(limit, offset);
     }
 
     /**
@@ -108,11 +110,13 @@ public class VolatileModel implements Model {
     /**
      * Method used to retrieve the categories belonging to a certain user.
      * @param sessionID The sessionID of the user.
+     * @param limit The maximum amount of categories to be fetched.
+     * @param offset The starting index to fetch categories.
      * @return An ArrayList of Category belonging to the user with sessionID.
      */
     @Override
-    public ArrayList<Category> getCategories(String sessionID) {
-        return this.getUserModel(sessionID).getCategories();
+    public ArrayList<Category> getCategories(String sessionID, String limit, String offset) {
+        return this.getUserModel(sessionID).getCategories(limit, offset);
     }
 
     /**
