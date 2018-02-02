@@ -38,15 +38,17 @@ public class MainRestController {
 
     /**
      * Method used to retrieve the transactions belonging to the user issuing the current request.
+     * @param category The category to be filtered on (empty String if no filter).
      * @param limit The maximum amount of transactions to be fetched.
      * @param offset The starting index to fetch transactions.
      * @return An ArrayList of Transaction belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/transactions")
-    public ArrayList<Transaction> getTransactions(@RequestParam(value = "limit", defaultValue = "20") String limit,
+    public ArrayList<Transaction> getTransactions(@RequestParam(value = "category", defaultValue = "") String category,
+                                                  @RequestParam(value = "limit", defaultValue = "20") String limit,
                                                   @RequestParam(value = "offset", defaultValue = "0") String offset) {
-        return model.getTransactions(this.getSessionID(), limit, offset);
+        return model.getTransactions(this.getSessionID(), category, limit, offset);
     }
 
     /**

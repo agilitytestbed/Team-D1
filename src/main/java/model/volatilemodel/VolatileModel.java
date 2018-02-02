@@ -40,13 +40,14 @@ public class VolatileModel implements Model {
     /**
      * Method used to retrieve the transactions belonging to a certain user.
      * @param sessionID The sessionID of the user.
+     * @param category The category to be filtered on (empty String if no filter).
      * @param limit The maximum amount of transactions to be fetched.
      * @param offset The starting index to fetch transactions.
      * @return An ArrayList of Transaction belonging to the user with sessionID.
      */
     @Override
-    public ArrayList<Transaction> getTransactions(String sessionID, String limit, String offset) {
-        return this.getUserModel(sessionID).getTransactions(limit, offset);
+    public ArrayList<Transaction> getTransactions(String sessionID, String category, String limit, String offset) {
+        return this.getUserModel(sessionID).getTransactions(category, limit, offset);
     }
 
     /**
