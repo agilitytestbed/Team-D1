@@ -47,7 +47,7 @@ public interface Model {
     public Transaction putTransaction(String sessionID, String transactionID, String name, String amount);
 
     /**
-     * Method used to remove a certain transaction of a certain user
+     * Method used to remove a certain transaction of a certain user.
      * @param sessionID The sessionID of the user.
      * @param transactionID The transactionID of the Transaction that will be deleted.
      */
