@@ -80,7 +80,7 @@ public class UserModel {
     }
 
     /**
-     * Method used to remove a certain transaction of this UserModel.
+     * Method used to remove a certain Transaction of this UserModel.
      * @param transactionIDString The transactionID of the Transaction that will be deleted.
      */
     public void deleteTransaction(String transactionIDString) {
@@ -91,11 +91,94 @@ public class UserModel {
     }
 
     /**
+     * Method used to assign a Category to a Transaction of this UserModel.
+     * @param transactionIDString The transactionID of the Transaction to which the Category will be assigned.
+     * @param categoryIDString The categoryID of the Category that will be assigned to the Transaction.
+     * @return The Transaction to which the Category is assigned.
+     */
+    public Transaction assignCategoryToTransaction(String transactionIDString, String categoryIDString) {
+        int transactionID = Integer.parseInt(transactionIDString);
+        if (transactionID < transactions.size()) {
+            Transaction transaction = this.transactions.get(transactionID);
+            int categoryID = Integer.parseInt(categoryIDString);
+            if (categoryID < categories.size()) {
+                transaction.setCategory(this.categories.get(categoryID));
+            } else {
+                transaction.setCategory(null);
+            }
+            return transaction;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Method used to retrieve the categories of this UserModel.
      * @return An ArrayList of Category of this UserModel.
      */
     public ArrayList<Category> getCategories() {
         return categories;
+    }
+
+    /**
+     * Method used to create a new Category in this UserModel.
+     * @param categoryName The name of the Category that will be created.
+     * @return The Category created by this method.
+     */
+    public Category postCategory(String categoryName) {
+        Category category = new Category(categoryName);
+        categories.add(category);
+        return category;
+    }
+
+    /**
+     * Method used to retrieve a certain Category from this UserModel.
+     * @param categoryIDString The categoryID of the Category that will be retrieved.
+     * @return The Category with categoryID contained in this UserModel.
+     */
+    public Category getCategory(String categoryIDString) {
+        int categoryID = Integer.parseInt(categoryIDString);
+        if (categoryID < categories.size()) {
+            return categories.get(categoryID);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Method used to update a certain Category in this UserModel.
+     * @param categoryIDString The categoryID of the Category that will be updated.
+     * @param categoryName The new name of the Category that will be updated.
+     * @return The Category updated by this method.
+     */
+    public Category putCategory(String categoryIDString, String categoryName) {
+        int categoryID = Integer.parseInt(categoryIDString);
+        if (categoryID < categories.size()) {
+            Category category = categories.get(categoryID);
+            if (categoryName != null && !categoryName.equals("")) {
+                category.setName(categoryName);
+            }
+            return category;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Method used to remove a certain Category of this UserModel.
+     * @param categoryIDString The categoryID of the Category that will be deleted.
+     */
+    public void deleteCategory(String categoryIDString) {
+        int categoryID = Integer.parseInt(categoryIDString);
+        if (categoryID < categories.size()) {
+            Category category = categories.get(categoryID);
+            for (Transaction transaction : transactions) {
+                if (transaction.getCategory() == category) {
+                    transaction.setCategory(null);
+                }
+            }
+            categories.remove(categoryID);
+        }
     }
 
 }

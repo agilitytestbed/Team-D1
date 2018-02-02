@@ -48,7 +48,7 @@ public class VolatileModel implements Model {
     }
 
     /**
-     * Method used to create a new transaction for a certain user.
+     * Method used to create a new Transaction for a certain user.
      * @param sessionID The sessionID of the user.
      * @param name The name of the to be created Transaction.
      * @param amount The amount (in cents) of the to be created Transaction.
@@ -60,7 +60,7 @@ public class VolatileModel implements Model {
     }
 
     /**
-     * Method used to retrieve a certain transaction of a certain user.
+     * Method used to retrieve a certain Transaction of a certain user.
      * @param sessionID The sessionID of the user.
      * @param transactionID The transactionID of the Transaction that will be retrieved.
      * @return The Transaction with transactionID belonging to the user with sessionID.
@@ -71,7 +71,7 @@ public class VolatileModel implements Model {
     }
 
     /**
-     * Method used to update a certain transaction of a certain user.
+     * Method used to update a certain Transaction of a certain user.
      * @param sessionID The sessionID of the user.
      * @param transactionID The transactionID of the Transaction that will be updated.
      * @param name The new name of the to be updated Transaction.
@@ -84,13 +84,79 @@ public class VolatileModel implements Model {
     }
 
     /**
-     * Method used to remove a certain transaction of a certain user.
+     * Method used to remove a certain Transaction of a certain user.
      * @param sessionID The sessionID of the user.
      * @param transactionID The transactionID of the Transaction that will be deleted.
      */
     @Override
     public void deleteTransaction(String sessionID, String transactionID) {
         this.getUserModel(sessionID).deleteTransaction(transactionID);
+    }
+
+    /**
+     * Method used to assign a Category to an Transaction.
+     * @param sessionID The sessionID of the user.
+     * @param transactionID The transactionID of the Transaction to which the Category will be assigned.
+     * @param categoryID The categoryID of the Category which will be assigned to the Transaction.
+     * @return The Transaction to which the Category is assigned.
+     */
+    @Override
+    public Transaction assignCategoryToTransaction(String sessionID, String transactionID, String categoryID) {
+        return this.getUserModel(sessionID).assignCategoryToTransaction(transactionID, categoryID);
+    }
+
+    /**
+     * Method used to retrieve the categories belonging to a certain user.
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of Category belonging to the user with sessionID.
+     */
+    @Override
+    public ArrayList<Category> getCategories(String sessionID) {
+        return this.getUserModel(sessionID).getCategories();
+    }
+
+    /**
+     * Method used to create a new Category for a certain user.
+     * @param sessionID The sessionID of the user.
+     * @param categoryName The name of the to be created category.
+     * @return The Category created by this method.
+     */
+    @Override
+    public Category postCategory(String sessionID, String categoryName) {
+        return this.getUserModel(sessionID).postCategory(categoryName);
+    }
+
+    /**
+     * Method used to retrieve a certain Category of a certain user.
+     * @param sessionID The sessionID of the user.
+     * @param categoryID The categoryID of the Category that will be retrieved.
+     * @return The Category with categoryID belonging to the user with sessionID.
+     */
+    @Override
+    public Category getCategory(String sessionID, String categoryID) {
+        return this.getUserModel(sessionID).getCategory(categoryID);
+    }
+
+    /**
+     * Method used to update a certain Category of a certain user.
+     * @param sessionID The sessionID of the user.
+     * @param categoryID The categoryID of the Category that will be updated.
+     * @param categoryName The new name of the to be updated Category.
+     * @return The Category updated by this method.
+     */
+    @Override
+    public Category putCategory(String sessionID, String categoryID, String categoryName) {
+        return this.getUserModel(sessionID).putCategory(categoryID, categoryName);
+    }
+
+    /**
+     * Method used to remove a certain Category of a certain user.
+     * @param sessionID The sessionID of the user.
+     * @param categoryID The categoryID of the Category that will be deleted.
+     */
+    @Override
+    public void deleteCategory(String sessionID, String categoryID) {
+        this.getUserModel(sessionID).deleteCategory(categoryID);
     }
 
 }

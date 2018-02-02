@@ -9,6 +9,7 @@ public class Transaction {
 
     private String name;
     private long amount;
+    private Category category;
 
     /**
      * The constructor of Transaction.
@@ -52,4 +53,19 @@ public class Transaction {
         this.amount = amount;
     }
 
+    /**
+     * Method used to retrieve the Category assigned to Transaction.
+     * @return The Category assigned to Transaction.
+     */
+    public Category getCategory() {
+        return category;
+    }
+
+    /**
+     * Method used to update the Category assigned to Transaction.
+     * @param category The new Category that will be assigned to Transaction.
+     */
+    public void setCategory(Category category) {
+        this.category = category;
+    }
 }
