@@ -1,4 +1,4 @@
-CREATE TABLE Money_Transaction(
+CREATE TABLE IF NOT EXISTS Money_Transaction(
 	transaction_id serial,
 	name text,
 	amount bigint,
