@@ -1,19 +1,17 @@
 CREATE TABLE IF NOT EXISTS Money_Transaction(
-	transaction_id serial,
+	transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name text,
-	amount bigint,
-	PRIMARY KEY(transaction_id)
+	amount bigint
 );
 
 CREATE TABLE IF NOT EXISTS Category(
-	category_id serial,
-	name text,
-	PRIMARY KEY(category_id)
+	category_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name text
 );
 
 CREATE TABLE IF NOT EXISTS Transaction_Category(
-	transaction_id bigint,
-	category_id bigint,
+	transaction_id int,
+	category_id int,
 	FOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id),
 	FOREIGN KEY(category_id) REFERENCES Category(category_id),
 	PRIMARY KEY(transaction_id, category_id)
@@ -21,14 +19,14 @@ CREATE TABLE IF NOT EXISTS Transaction_Category(
 
 CREATE TABLE IF NOT EXISTS User_Transaction(
 	session_id text,
-	transaction_id bigint,
+	transaction_id int,
 	FOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id),
 	PRIMARY KEY(session_id, transaction_id)
 );
 
 CREATE TABLE IF NOT EXISTS User_Category(
 	session_id text,
-	category_id bigint,
+	category_id int,
 	FOREIGN KEY(category_id) REFERENCES Category(category_id),
 	PRIMARY KEY(session_id, category_id)
 );
