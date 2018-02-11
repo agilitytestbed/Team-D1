@@ -1,13 +1,15 @@
 package model.volatilemodel;
 
+import model.bean.Category;
 import model.Model;
+import model.bean.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The VolataleModel class, an implementation of the Model interface.
+ * The VolatileModel class, an implementation of the Model interface.
  * Implements the methods specified in the Model interface using volatile storage methods, meaning that the data
  * stored using the volatile model will be discarded once the application terminates.
  * @author Daan Kooij

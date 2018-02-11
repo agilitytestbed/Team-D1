@@ -1,7 +1,7 @@
 package model;
 
-import model.volatilemodel.Category;
-import model.volatilemodel.Transaction;
+import model.bean.Category;
+import model.bean.Transaction;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,8 @@
 package model.volatilemodel;
 
+import model.bean.Category;
+import model.bean.Transaction;
+
 import java.util.ArrayList;
 
 /**

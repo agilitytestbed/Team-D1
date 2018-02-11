@@ -1,8 +1,9 @@
 package api;
 
 import model.Model;
-import model.volatilemodel.Category;
-import model.volatilemodel.Transaction;
+import model.bean.Category;
+import model.bean.Transaction;
+import model.persistentmodel.PersistentModel;
 import model.volatilemodel.VolatileModel;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -25,7 +26,7 @@ public class MainRestController {
      * Initializes the model.
      */
     public MainRestController() {
-        model = new VolatileModel();
+        model = new PersistentModel();
     }
 
     /**

@@ -1,4 +1,4 @@
-package model.volatilemodel;
+package model.bean;
 
 /**
  * The Transaction class.

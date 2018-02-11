@@ -1,5 +1,6 @@
 package api;
 
+import model.persistentmodel.DatabaseConnection;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -16,6 +17,7 @@ public class Application {
      * @param args The command line arguments.
      */
     public static void main(String[] args) {
+        DatabaseConnection.setUp("ing.db");
         SpringApplication.run(Application.class, args);
     }
 
