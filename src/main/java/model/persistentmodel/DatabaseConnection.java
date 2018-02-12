@@ -61,8 +61,8 @@ public class DatabaseConnection {
                     "CREATE TABLE IF NOT EXISTS Transaction_Category(\n" +
                     "\ttransaction_id int,\n" +
                     "\tcategory_id int,\n" +
-                    "\tFOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id),\n" +
-                    "\tFOREIGN KEY(category_id) REFERENCES Category(category_id),\n" +
+                    "\tFOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id) ON DELETE CASCADE,\n" +
+                    "\tFOREIGN KEY(category_id) REFERENCES Category(category_id) ON DELETE CASCADE,\n" +
                     "\tPRIMARY KEY(transaction_id, category_id)\n" +
                     ");"
             );
@@ -70,7 +70,7 @@ public class DatabaseConnection {
                     "CREATE TABLE IF NOT EXISTS User_Transaction(\n" +
                     "\tsession_id text,\n" +
                     "\ttransaction_id int,\n" +
-                    "\tFOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id),\n" +
+                    "\tFOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id) ON DELETE CASCADE,\n" +
                     "\tPRIMARY KEY(session_id, transaction_id)\n" +
                     ");"
             );
@@ -78,7 +78,7 @@ public class DatabaseConnection {
                     "CREATE TABLE IF NOT EXISTS User_Category(\n" +
                     "\tsession_id text,\n" +
                     "\tcategory_id int,\n" +
-                    "\tFOREIGN KEY(category_id) REFERENCES Category(category_id),\n" +
+                    "\tFOREIGN KEY(category_id) REFERENCES Category(category_id) ON DELETE CASCADE,\n" +
                     "\tPRIMARY KEY(session_id, category_id)\n" +
                     ");"
             );
