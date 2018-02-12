@@ -7,14 +7,35 @@ package model.bean;
  */
 public class Category {
 
+    private int categoryID;
     private String name;
 
     /**
-     * The constructor of Category.
+     * A constructor of Category.
+     * Used when created a Category without categoryID.
      * @param name The name of the to be created Category.
      */
     public Category(String name) {
         this.name = name;
+    }
+
+    /**
+     * A constructor of Category.
+     * Used when created a Category with categoryID.
+     * @param categoryID The ID of the to be created Category.
+     * @param name The name of the to be created Category.
+     */
+    public Category(int categoryID, String name) {
+        this.categoryID = categoryID;
+        this.name = name;
+    }
+
+    /**
+     * Method used to retrieve the ID of Category.
+     * @return The ID of Category.
+     */
+    public int getCategoryID() {
+        return categoryID;
     }
 
     /**
