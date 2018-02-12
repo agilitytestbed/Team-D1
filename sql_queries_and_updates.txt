@@ -62,6 +62,13 @@ OFFSET ?;
 INSERT INTO Category (name)
 VALUES (?);
 
+SELECT MAX(category_id)
+FROM Category;
+
+SELECT category_id, name
+FROM Category
+WHERE category_ = ?;
+
 	getCategory:
 SELECT c.category_id, c.name
 FROM Category c, User_Category u
