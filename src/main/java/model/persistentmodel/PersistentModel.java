@@ -17,6 +17,12 @@ import java.util.ArrayList;
  */
 public class PersistentModel implements Model {
 
+    private SQLModel sqlModel;
+
+    public PersistentModel() {
+        this.sqlModel = new SQLModel();
+    }
+
     /**
      * Method used to retrieve the transactions belonging to a certain user.
      *
@@ -27,51 +33,21 @@ public class PersistentModel implements Model {
      * @return An ArrayList of Transaction belonging to the user with sessionID.
      */
     public ArrayList<Transaction> getTransactions(String sessionID, String category, String limit, String offset) {
-        return null; // TODO: implement
+        return sqlModel.getTransactions(sessionID, category, limit, offset);
     }
 
     /**
      * Method used to create a new Transaction for a certain user.
-     *
      * @param sessionID The sessionID of the user.
      * @param name      The name of the to be created Transaction.
      * @param amount    The amount (in cents) of the to be created Transaction.
      * @return The Transaction created by this method.
      */
     public Transaction postTransaction(String sessionID, String name, String amount) {
-        Transaction transaction = null;
-        PreparedStatement preparedStatement;
-        ResultSet resultSet;
-        Connection connection = DatabaseConnection.getDatabaseConnection();
-        try {
-            PreparedStatement statement = connection.prepareStatement(
-                    "INSERT INTO Money_Transaction (name, amount) VALUES (?, ?);");
-            statement.setString(1, name);
-            statement.setLong(2, Long.parseLong(amount));
-            statement.executeUpdate();
-
-            statement = connection.prepareStatement(
-                    "SELECT MAX(transaction_id) FROM Money_Transaction;");
-            resultSet = statement.executeQuery();
-            resultSet.next();
-            int transaction_id = resultSet.getInt(1);
-
-            statement = connection.prepareStatement(
-                    "INSERT INTO User_Transaction (session_id, transaction_id) VALUES (?, ?);");
-            statement.setString(1, sessionID);
-            statement.setInt(2, transaction_id);
-            statement.executeUpdate();
-
-            statement = connection.prepareStatement(
-                    "SELECT transaction_id, name, amount FROM Money_Transaction WHERE transaction_id = ?;");
-            statement.setInt(1, transaction_id);
-            resultSet = statement.executeQuery();
-            resultSet.next();
-            transaction = new Transaction(resultSet.getString(2), resultSet.getLong(3));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return transaction; // TODO: maybe implement it another way
+        Transaction transaction = sqlModel.postTransaction(name, amount);
+        int transactionID = transaction.getTransactionID();
+        sqlModel.assignTransactionToUser(sessionID, transactionID);
+        return transaction;
     }
 
     /**
@@ -82,7 +58,7 @@ public class PersistentModel implements Model {
      * @return The Transaction with transactionID belonging to the user with sessionID.
      */
     public Transaction getTransaction(String sessionID, String transactionID) {
-        return null; // TODO: implement
+        return sqlModel.getTransaction(sessionID, transactionID);
     }
 
     /**
@@ -95,7 +71,7 @@ public class PersistentModel implements Model {
      * @return The Transaction updated by this method.
      */
     public Transaction putTransaction(String sessionID, String transactionID, String name, String amount) {
-        return null; // TODO: implement
+        return sqlModel.putTransaction(sessionID, transactionID, name, amount);
     }
 
     /**
@@ -105,7 +81,7 @@ public class PersistentModel implements Model {
      * @param transactionID The transactionID of the Transaction that will be deleted.
      */
     public void deleteTransaction(String sessionID, String transactionID) {
-        // TODO: implement
+        sqlModel.deleteTransaction(sessionID, transactionID);
     }
 
     /**
@@ -117,7 +93,7 @@ public class PersistentModel implements Model {
      * @return The Transaction to which the Category is assigned.
      */
     public Transaction assignCategoryToTransaction(String sessionID, String transactionID, String categoryID) {
-        return null; // TODO: implement
+        return sqlModel.assignCategoryToTransaction(sessionID, transactionID, categoryID);
     }
 
     /**
@@ -129,7 +105,7 @@ public class PersistentModel implements Model {
      * @return An ArrayList of Category belonging to the user with sessionID.
      */
     public ArrayList<Category> getCategories(String sessionID, String limit, String offset) {
-        return null; // TODO: implement
+        return sqlModel.getCategories(sessionID, limit, offset);
     }
 
     /**
@@ -140,7 +116,10 @@ public class PersistentModel implements Model {
      * @return The Category created by this method.
      */
     public Category postCategory(String sessionID, String categoryName) {
-        return null; // TODO: implement
+        Category category = sqlModel.postCategory(sessionID, categoryName);
+        int categoryID = category.getCategoryID();
+        sqlModel.assignCategoryToUser(sessionID, categoryID);
+        return category;
     }
 
     /**
@@ -151,7 +130,7 @@ public class PersistentModel implements Model {
      * @return The Category with categoryID belonging to the user with sessionID.
      */
     public Category getCategory(String sessionID, String categoryID) {
-        return null; // TODO: implement
+        return sqlModel.getCategory(sessionID, categoryID);
     }
 
     /**
@@ -163,7 +142,7 @@ public class PersistentModel implements Model {
      * @return The Category updated by this method.
      */
     public Category putCategory(String sessionID, String categoryID, String categoryName) {
-        return null; // TODO: implement
+        return sqlModel.putCategory(sessionID, categoryID, categoryName);
     }
 
     /**
@@ -173,7 +152,7 @@ public class PersistentModel implements Model {
      * @param categoryID The categoryID of the Category that will be deleted.
      */
     public void deleteCategory(String sessionID, String categoryID) {
-        // TODO: implement
+        sqlModel.deleteCategory(sessionID, categoryID);
     }
 
 }
