@@ -144,10 +144,10 @@ public class PersistentModel implements Model {
     public Transaction assignCategoryToTransaction(String sessionID, String transactionIDString, String categoryIDString) {
         int transactionID = Integer.parseInt(transactionIDString);
         Transaction transaction = customORM.getTransactionBySessionID(sessionID, transactionID);
-        if (!transaction.equals(null)) {
+        if (transaction != null) {
             int categoryID = Integer.parseInt(categoryIDString);
             Category category = customORM.getCategoryBySessionID(sessionID, categoryID);
-            if (!category.equals(null)) {
+            if (category != null) {
                 customORM.unlinkTransactionFromAllCategories(transactionID);
                 customORM.linkTransactionToCategory(transactionID, categoryID);
                 transaction.setCategory(category);
@@ -248,9 +248,11 @@ public class PersistentModel implements Model {
      * @param transaction The Transaction object that will be populated by a Category object.
      */
     private void populateCategory(Transaction transaction) {
-        int categoryID = customORM.getCategoryIDByTransactionID(transaction.getTransactionID());
-        Category category = customORM.getCategory(categoryID);
-        transaction.setCategory(category);
+        if (transaction != null) {
+            int categoryID = customORM.getCategoryIDByTransactionID(transaction.getTransactionID());
+            Category category = customORM.getCategory(categoryID);
+            transaction.setCategory(category);
+        }
     }
 
 }
