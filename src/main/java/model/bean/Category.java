@@ -3,6 +3,7 @@ package model.bean;
 /**
  * The Category class.
  * Used to store information about a Category.
+ *
  * @author Daan Kooij
  */
 public class Category {
@@ -13,6 +14,7 @@ public class Category {
     /**
      * A constructor of Category.
      * Used when created a Category without categoryID.
+     *
      * @param name The name of the to be created Category.
      */
     public Category(String name) {
@@ -22,8 +24,9 @@ public class Category {
     /**
      * A constructor of Category.
      * Used when created a Category with categoryID.
+     *
      * @param categoryID The ID of the to be created Category.
-     * @param name The name of the to be created Category.
+     * @param name       The name of the to be created Category.
      */
     public Category(int categoryID, String name) {
         this.categoryID = categoryID;
@@ -32,6 +35,7 @@ public class Category {
 
     /**
      * Method used to retrieve the ID of Category.
+     *
      * @return The ID of Category.
      */
     public int getCategoryID() {
@@ -40,6 +44,7 @@ public class Category {
 
     /**
      * Method used to retrieve the name of Category.
+     *
      * @return The name of Category.
      */
     public String getName() {
@@ -48,6 +53,7 @@ public class Category {
 
     /**
      * Method used to update the name of Category.
+     *
      * @param name The new name of Category.
      */
     public void setName(String name) {

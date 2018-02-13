@@ -4,7 +4,6 @@ import model.Model;
 import model.bean.Category;
 import model.bean.Transaction;
 import model.persistentmodel.PersistentModel;
-import model.volatilemodel.VolatileModel;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -14,6 +13,7 @@ import java.util.ArrayList;
  * The MainRestController class.
  * Consists of methods that allow the application to make use of REST using the Spring framework.
  * Makes use of the Model interface (and an implementation of it) to store data.
+ *
  * @author Daan Kooij
  */
 @RestController
@@ -31,6 +31,7 @@ public class MainRestController {
 
     /**
      * Method used to retrieve the sessionID of the user issuing the current request.
+     *
      * @return The sessionID of the user issuing the current request.
      */
     public String getSessionID() {
@@ -39,9 +40,10 @@ public class MainRestController {
 
     /**
      * Method used to retrieve the transactions belonging to the user issuing the current request.
+     *
      * @param category The category to be filtered on (empty String if no filter).
-     * @param limit The maximum amount of transactions to be fetched.
-     * @param offset The starting index to fetch transactions.
+     * @param limit    The maximum amount of transactions to be fetched.
+     * @param offset   The starting index to fetch transactions.
      * @return An ArrayList of Transaction belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
@@ -54,7 +56,8 @@ public class MainRestController {
 
     /**
      * Method used to create a new Transaction for the user issuing the current request.
-     * @param name The name of the to be created Transaction.
+     *
+     * @param name   The name of the to be created Transaction.
      * @param amount The amount (in cents) of the to be created Transaction.
      * @return The Transaction created using this method.
      */
@@ -68,6 +71,7 @@ public class MainRestController {
 
     /**
      * Method used to retrieve a certain Transaction of the user issuing the current request.
+     *
      * @param transactionID The transactionID of the Transaction that will be retrieved.
      * @return The Transaction with transactionID belonging to the user issuing the current request.
      */
@@ -79,9 +83,10 @@ public class MainRestController {
 
     /**
      * Method used to update a certain transaction of the user issuing the current request.
+     *
      * @param transactionID The transactionID of the Transaction that will be updated.
-     * @param name The new name of the to be updated Transaction (empty String if not updated).
-     * @param amount The new amount (in cents) of the to be updated Transaction (empty String if not updated).
+     * @param name          The new name of the to be updated Transaction (empty String if not updated).
+     * @param amount        The new amount (in cents) of the to be updated Transaction (empty String if not updated).
      * @return The Transaction updated using this method.
      */
     @RequestMapping(method = RequestMethod.PUT,
@@ -94,6 +99,7 @@ public class MainRestController {
 
     /**
      * Method used to remove a certain transaction of the user issuing the current request.
+     *
      * @param transactionID The transactionID of the Transaction that will be deleted.
      */
     @RequestMapping(method = RequestMethod.DELETE,
@@ -104,8 +110,9 @@ public class MainRestController {
 
     /**
      * Method used to assign a certain category to a certain transaction of the user issuing the current request.
+     *
      * @param transactionID The transactionID of the Transaction to which the Category will be assigned.
-     * @param categoryID The categoryID of the Category which will be assigned to a Transaction.
+     * @param categoryID    The categoryID of the Category which will be assigned to a Transaction.
      * @return The Transaction to which a Category is assigned.
      */
     @RequestMapping(method = RequestMethod.POST,
@@ -118,7 +125,8 @@ public class MainRestController {
 
     /**
      * Method used to retrieve the categories belonging to the user issuing the current request.
-     * @param limit The maximum amount of categories to be fetched.
+     *
+     * @param limit  The maximum amount of categories to be fetched.
      * @param offset The starting index to fetch categories.
      * @return An ArrayList of Category belonging to the user issuing the current request.
      */
@@ -131,6 +139,7 @@ public class MainRestController {
 
     /**
      * Method used to create a new Category for the user issuing the current request.
+     *
      * @param categoryName The name of the to be created Category.
      * @return The Category created by using this method.
      */
@@ -143,6 +152,7 @@ public class MainRestController {
 
     /**
      * Method used to retrieve a certain Category belonging to the user issuing the current request.
+     *
      * @param categoryID The categoryID of the Category that will be retrieved.
      * @return The Category with categoryID belonging to the user issuing the current request.
      */
@@ -154,7 +164,8 @@ public class MainRestController {
 
     /**
      * Method used to update a certain Category belonging to the user issuing the current request.
-     * @param categoryID The categoryID of the Category that will be updated.
+     *
+     * @param categoryID   The categoryID of the Category that will be updated.
      * @param categoryName The new name of the to be updated Category (empty String if not updated).
      * @return The Category updated using this method.
      */
@@ -167,6 +178,7 @@ public class MainRestController {
 
     /**
      * Method used to remove a certain Category belonging to the user issuing the current request.
+     *
      * @param categoryID The categoryID of the Category that will be deleted.
      */
     @RequestMapping(method = RequestMethod.DELETE,

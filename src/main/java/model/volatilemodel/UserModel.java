@@ -8,6 +8,7 @@ import java.util.ArrayList;
 /**
  * The UserModel class.
  * Used to interact with transactions and categories of a certain user.
+ *
  * @author Daan Kooij
  */
 public class UserModel {
@@ -26,9 +27,10 @@ public class UserModel {
 
     /**
      * Method used to retrieve the transactions of this UserModel.
+     *
      * @param categoryString The category to be filtered on (empty String if no filter).
-     * @param limitString The maximum amount of transactions to be fetched.
-     * @param offsetString The starting index to fetch transactions.
+     * @param limitString    The maximum amount of transactions to be fetched.
+     * @param offsetString   The starting index to fetch transactions.
      * @return An ArrayList of Transaction of this UserModel.
      */
     public ArrayList<Transaction> getTransactions(String categoryString, String limitString, String offsetString) {
@@ -58,7 +60,8 @@ public class UserModel {
 
     /**
      * Method used to create a new transaction in this UserModel.
-     * @param name The name of the to be created Transaction.
+     *
+     * @param name   The name of the to be created Transaction.
      * @param amount The amount (in cents) of the to be created Transaction.
      * @return The Transaction created by this method.
      */
@@ -70,6 +73,7 @@ public class UserModel {
 
     /**
      * Method used to retrieve a certain transaction of this UserModel.
+     *
      * @param transactionIDString The transactionID of the Transaction that will be retrieved.
      * @return The Transaction with transactionID contained in this UserModel.
      */
@@ -85,9 +89,10 @@ public class UserModel {
     /**
      * Method used to update a certain transaction of this UserModel.
      * Will not update unspecified fields.
+     *
      * @param transactionIDString The transactionID of the Transaction that will be updated.
-     * @param name The new name of the to be updated Transaction.
-     * @param amount The new amount (in cents) of the to be updated Transaction.
+     * @param name                The new name of the to be updated Transaction.
+     * @param amount              The new amount (in cents) of the to be updated Transaction.
      * @return The Transaction updated by this method.
      */
     public Transaction putTransaction(String transactionIDString, String name, String amount) {
@@ -108,6 +113,7 @@ public class UserModel {
 
     /**
      * Method used to remove a certain Transaction of this UserModel.
+     *
      * @param transactionIDString The transactionID of the Transaction that will be deleted.
      */
     public void deleteTransaction(String transactionIDString) {
@@ -119,8 +125,9 @@ public class UserModel {
 
     /**
      * Method used to assign a Category to a Transaction of this UserModel.
+     *
      * @param transactionIDString The transactionID of the Transaction to which the Category will be assigned.
-     * @param categoryIDString The categoryID of the Category that will be assigned to the Transaction.
+     * @param categoryIDString    The categoryID of the Category that will be assigned to the Transaction.
      * @return The Transaction to which the Category is assigned.
      */
     public Transaction assignCategoryToTransaction(String transactionIDString, String categoryIDString) {
@@ -141,7 +148,8 @@ public class UserModel {
 
     /**
      * Method used to retrieve the categories of this UserModel.
-     * @param limitString The maximum amount of categories to be fetched.
+     *
+     * @param limitString  The maximum amount of categories to be fetched.
      * @param offsetString The starting index to fetch categories.
      * @return An ArrayList of Category of this UserModel.
      */
@@ -158,6 +166,7 @@ public class UserModel {
 
     /**
      * Method used to create a new Category in this UserModel.
+     *
      * @param categoryName The name of the Category that will be created.
      * @return The Category created by this method.
      */
@@ -169,6 +178,7 @@ public class UserModel {
 
     /**
      * Method used to retrieve a certain Category from this UserModel.
+     *
      * @param categoryIDString The categoryID of the Category that will be retrieved.
      * @return The Category with categoryID contained in this UserModel.
      */
@@ -183,8 +193,9 @@ public class UserModel {
 
     /**
      * Method used to update a certain Category in this UserModel.
+     *
      * @param categoryIDString The categoryID of the Category that will be updated.
-     * @param categoryName The new name of the Category that will be updated.
+     * @param categoryName     The new name of the Category that will be updated.
      * @return The Category updated by this method.
      */
     public Category putCategory(String categoryIDString, String categoryName) {
@@ -202,6 +213,7 @@ public class UserModel {
 
     /**
      * Method used to remove a certain Category of this UserModel.
+     *
      * @param categoryIDString The categoryID of the Category that will be deleted.
      */
     public void deleteCategory(String categoryIDString) {

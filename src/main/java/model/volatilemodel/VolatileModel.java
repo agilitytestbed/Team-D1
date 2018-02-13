@@ -12,6 +12,7 @@ import java.util.Map;
  * The VolatileModel class, an implementation of the Model interface.
  * Implements the methods specified in the Model interface using volatile storage methods, meaning that the data
  * stored using the volatile model will be discarded once the application terminates.
+ *
  * @author Daan Kooij
  */
 public class VolatileModel implements Model {
@@ -29,6 +30,7 @@ public class VolatileModel implements Model {
     /**
      * Method used to retrieve the UserModel belonging to a certain sessionID.
      * If UserModel with sessionID does not yet exist, it will be created.
+     *
      * @param sessionID The sessionID of the user.
      * @return The UserModel belonging to the user with sessionID.
      */
@@ -41,10 +43,11 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to retrieve the transactions belonging to a certain user.
+     *
      * @param sessionID The sessionID of the user.
-     * @param category The category to be filtered on (empty String if no filter).
-     * @param limit The maximum amount of transactions to be fetched.
-     * @param offset The starting index to fetch transactions.
+     * @param category  The category to be filtered on (empty String if no filter).
+     * @param limit     The maximum amount of transactions to be fetched.
+     * @param offset    The starting index to fetch transactions.
      * @return An ArrayList of Transaction belonging to the user with sessionID.
      */
     @Override
@@ -54,9 +57,10 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to create a new Transaction for a certain user.
+     *
      * @param sessionID The sessionID of the user.
-     * @param name The name of the to be created Transaction.
-     * @param amount The amount (in cents) of the to be created Transaction.
+     * @param name      The name of the to be created Transaction.
+     * @param amount    The amount (in cents) of the to be created Transaction.
      * @return The Transaction created by this method.
      */
     @Override
@@ -66,7 +70,8 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to retrieve a certain Transaction of a certain user.
-     * @param sessionID The sessionID of the user.
+     *
+     * @param sessionID     The sessionID of the user.
      * @param transactionID The transactionID of the Transaction that will be retrieved.
      * @return The Transaction with transactionID belonging to the user with sessionID.
      */
@@ -77,10 +82,11 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to update a certain Transaction of a certain user.
-     * @param sessionID The sessionID of the user.
+     *
+     * @param sessionID     The sessionID of the user.
      * @param transactionID The transactionID of the Transaction that will be updated.
-     * @param name The new name of the to be updated Transaction.
-     * @param amount The new amount (in cents) of the to be updated Transaction.
+     * @param name          The new name of the to be updated Transaction.
+     * @param amount        The new amount (in cents) of the to be updated Transaction.
      * @return The Transaction updated by this method.
      */
     @Override
@@ -90,7 +96,8 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to remove a certain Transaction of a certain user.
-     * @param sessionID The sessionID of the user.
+     *
+     * @param sessionID     The sessionID of the user.
      * @param transactionID The transactionID of the Transaction that will be deleted.
      */
     @Override
@@ -100,9 +107,10 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to assign a Category to an Transaction.
-     * @param sessionID The sessionID of the user.
+     *
+     * @param sessionID     The sessionID of the user.
      * @param transactionID The transactionID of the Transaction to which the Category will be assigned.
-     * @param categoryID The categoryID of the Category which will be assigned to the Transaction.
+     * @param categoryID    The categoryID of the Category which will be assigned to the Transaction.
      * @return The Transaction to which the Category is assigned.
      */
     @Override
@@ -112,9 +120,10 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to retrieve the categories belonging to a certain user.
+     *
      * @param sessionID The sessionID of the user.
-     * @param limit The maximum amount of categories to be fetched.
-     * @param offset The starting index to fetch categories.
+     * @param limit     The maximum amount of categories to be fetched.
+     * @param offset    The starting index to fetch categories.
      * @return An ArrayList of Category belonging to the user with sessionID.
      */
     @Override
@@ -124,7 +133,8 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to create a new Category for a certain user.
-     * @param sessionID The sessionID of the user.
+     *
+     * @param sessionID    The sessionID of the user.
      * @param categoryName The name of the to be created category.
      * @return The Category created by this method.
      */
@@ -135,7 +145,8 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to retrieve a certain Category of a certain user.
-     * @param sessionID The sessionID of the user.
+     *
+     * @param sessionID  The sessionID of the user.
      * @param categoryID The categoryID of the Category that will be retrieved.
      * @return The Category with categoryID belonging to the user with sessionID.
      */
@@ -146,8 +157,9 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to update a certain Category of a certain user.
-     * @param sessionID The sessionID of the user.
-     * @param categoryID The categoryID of the Category that will be updated.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param categoryID   The categoryID of the Category that will be updated.
      * @param categoryName The new name of the to be updated Category.
      * @return The Category updated by this method.
      */
@@ -158,7 +170,8 @@ public class VolatileModel implements Model {
 
     /**
      * Method used to remove a certain Category of a certain user.
-     * @param sessionID The sessionID of the user.
+     *
+     * @param sessionID  The sessionID of the user.
      * @param categoryID The categoryID of the Category that will be deleted.
      */
     @Override
