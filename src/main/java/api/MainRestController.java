@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The MainRestController class.
@@ -20,13 +21,15 @@ import java.util.ArrayList;
 public class MainRestController {
 
     private Model model;
+    private HashMap<String, String> sessionIDMap;
 
     /**
      * The constructor of MainRestController.
-     * Initializes the model.
+     * Initializes the model and the sessionIDMap.
      */
     public MainRestController() {
         model = new PersistentModel();
+        sessionIDMap = new HashMap<>();
     }
 
     /**
@@ -34,51 +37,68 @@ public class MainRestController {
      *
      * @return The sessionID of the user issuing the current request.
      */
-    public String getSessionID() {
-        return RequestContextHolder.currentRequestAttributes().getSessionId();
+    private String getSessionID(String parameterSessionID, String headerSessionID) {
+        String realSessionID = RequestContextHolder.currentRequestAttributes().getSessionId();
+        if (!parameterSessionID.equals("")) {
+            sessionIDMap.put(realSessionID, parameterSessionID);
+        } else if (!headerSessionID.equals("")) {
+            sessionIDMap.put(realSessionID, headerSessionID);
+        }
+        return sessionIDMap.getOrDefault(realSessionID, realSessionID);
     }
 
     /**
      * Method used to retrieve the transactions belonging to the user issuing the current request.
      *
-     * @param category The category to be filtered on (empty String if no filter).
-     * @param limit    The maximum amount of transactions to be fetched.
-     * @param offset   The starting index to fetch transactions.
+     * @param category   The category to be filtered on (empty String if no filter).
+     * @param limit      The maximum amount of transactions to be fetched.
+     * @param offset     The starting index to fetch transactions.
+     * @param pSessionID The custom sessionID specified as a request parameter.
+     * @param hSessionID The custom sessionID specified in the HTTP header.
      * @return An ArrayList of Transaction belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/transactions")
     public ArrayList<Transaction> getTransactions(@RequestParam(value = "category", defaultValue = "") String category,
                                                   @RequestParam(value = "limit", defaultValue = "20") String limit,
-                                                  @RequestParam(value = "offset", defaultValue = "0") String offset) {
-        return model.getTransactions(this.getSessionID(), category, limit, offset);
+                                                  @RequestParam(value = "offset", defaultValue = "0") String offset,
+                                                  @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                                  @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.getTransactions(this.getSessionID(pSessionID, hSessionID), category, limit, offset);
     }
 
     /**
      * Method used to create a new Transaction for the user issuing the current request.
      *
-     * @param name   The name of the to be created Transaction.
-     * @param amount The amount (in cents) of the to be created Transaction.
+     * @param name       The name of the to be created Transaction.
+     * @param amount     The amount (in cents) of the to be created Transaction.
+     * @param pSessionID The custom sessionID specified as a request parameter.
+     * @param hSessionID The custom sessionID specified in the HTTP header.
      * @return The Transaction created using this method.
      */
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/transactions")
     public Transaction postTransaction(@RequestParam(value = "name") String name,
-                                       @RequestParam(value = "amount") String amount) {
-        String sessionID = RequestContextHolder.currentRequestAttributes().getSessionId();
-        return model.postTransaction(this.getSessionID(), name, amount);
+                                       @RequestParam(value = "amount") String amount,
+                                       @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                       @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.postTransaction(this.getSessionID(pSessionID, hSessionID), name, amount);
     }
 
     /**
      * Method used to retrieve a certain Transaction of the user issuing the current request.
      *
      * @param transactionID The transactionID of the Transaction that will be retrieved.
+     * @param pSessionID    The custom sessionID specified as a request parameter.
+     * @param hSessionID    The custom sessionID specified in the HTTP header.
      * @return The Transaction with transactionID belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}")
-    public Transaction getTransaction(@PathVariable String transactionID) {
-        return model.getTransaction(this.getSessionID(), transactionID);
+    public Transaction getTransaction(@PathVariable String transactionID,
+                                      @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                      @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.getTransaction(this.getSessionID(pSessionID, hSessionID), transactionID);
     }
 
     /**
@@ -87,25 +107,33 @@ public class MainRestController {
      * @param transactionID The transactionID of the Transaction that will be updated.
      * @param name          The new name of the to be updated Transaction (empty String if not updated).
      * @param amount        The new amount (in cents) of the to be updated Transaction (empty String if not updated).
+     * @param pSessionID    The custom sessionID specified as a request parameter.
+     * @param hSessionID    The custom sessionID specified in the HTTP header.
      * @return The Transaction updated using this method.
      */
     @RequestMapping(method = RequestMethod.PUT,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}")
     public Transaction putTransaction(@PathVariable String transactionID,
                                       @RequestParam(value = "name", defaultValue = "") String name,
-                                      @RequestParam(value = "amount", defaultValue = "") String amount) {
-        return model.putTransaction(this.getSessionID(), transactionID, name, amount);
+                                      @RequestParam(value = "amount", defaultValue = "") String amount,
+                                      @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                      @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.putTransaction(this.getSessionID(pSessionID, hSessionID), transactionID, name, amount);
     }
 
     /**
      * Method used to remove a certain transaction of the user issuing the current request.
      *
      * @param transactionID The transactionID of the Transaction that will be deleted.
+     * @param pSessionID    The custom sessionID specified as a request parameter.
+     * @param hSessionID    The custom sessionID specified in the HTTP header.
      */
     @RequestMapping(method = RequestMethod.DELETE,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}")
-    public void deleteTransaction(@PathVariable String transactionID) {
-        model.deleteTransaction(this.getSessionID(), transactionID);
+    public void deleteTransaction(@PathVariable String transactionID,
+                                  @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                  @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        model.deleteTransaction(this.getSessionID(pSessionID, hSessionID), transactionID);
     }
 
     /**
@@ -113,53 +141,67 @@ public class MainRestController {
      *
      * @param transactionID The transactionID of the Transaction to which the Category will be assigned.
      * @param categoryID    The categoryID of the Category which will be assigned to a Transaction.
+     * @param pSessionID    The custom sessionID specified as a request parameter.
+     * @param hSessionID    The custom sessionID specified in the HTTP header.
      * @return The Transaction to which a Category is assigned.
      */
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}/assignCategory")
     public Transaction assignCategoryToTransaction(@PathVariable String transactionID,
-                                                   @RequestParam(value = "categoryID") String categoryID) {
-        String sessionID = RequestContextHolder.currentRequestAttributes().getSessionId();
-        return model.assignCategoryToTransaction(this.getSessionID(), transactionID, categoryID);
+                                                   @RequestParam(value = "categoryID") String categoryID,
+                                                   @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                                   @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.assignCategoryToTransaction(this.getSessionID(pSessionID, hSessionID), transactionID, categoryID);
     }
 
     /**
      * Method used to retrieve the categories belonging to the user issuing the current request.
      *
-     * @param limit  The maximum amount of categories to be fetched.
-     * @param offset The starting index to fetch categories.
+     * @param limit      The maximum amount of categories to be fetched.
+     * @param offset     The starting index to fetch categories.
+     * @param pSessionID The custom sessionID specified as a request parameter.
+     * @param hSessionID The custom sessionID specified in the HTTP header.
      * @return An ArrayList of Category belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/categories")
     public ArrayList<Category> getCategories(@RequestParam(value = "limit", defaultValue = "20") String limit,
-                                             @RequestParam(value = "offset", defaultValue = "0") String offset) {
-        return model.getCategories(this.getSessionID(), limit, offset);
+                                             @RequestParam(value = "offset", defaultValue = "0") String offset,
+                                             @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                             @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.getCategories(this.getSessionID(pSessionID, hSessionID), limit, offset);
     }
 
     /**
      * Method used to create a new Category for the user issuing the current request.
      *
      * @param categoryName The name of the to be created Category.
+     * @param pSessionID   The custom sessionID specified as a request parameter.
+     * @param hSessionID   The custom sessionID specified in the HTTP header.
      * @return The Category created by using this method.
      */
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/categories")
-    public Category postCategory(@RequestParam(value = "name") String categoryName) {
-        String sessionID = RequestContextHolder.currentRequestAttributes().getSessionId();
-        return model.postCategory(this.getSessionID(), categoryName);
+    public Category postCategory(@RequestParam(value = "name") String categoryName,
+                                 @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                 @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.postCategory(this.getSessionID(pSessionID, hSessionID), categoryName);
     }
 
     /**
      * Method used to retrieve a certain Category belonging to the user issuing the current request.
      *
      * @param categoryID The categoryID of the Category that will be retrieved.
+     * @param pSessionID The custom sessionID specified as a request parameter.
+     * @param hSessionID The custom sessionID specified in the HTTP header.
      * @return The Category with categoryID belonging to the user issuing the current request.
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/categories/{categoryID}")
-    public Category getCategory(@PathVariable String categoryID) {
-        return model.getCategory(this.getSessionID(), categoryID);
+    public Category getCategory(@PathVariable String categoryID,
+                                @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.getCategory(this.getSessionID(pSessionID, hSessionID), categoryID);
     }
 
     /**
@@ -167,24 +209,32 @@ public class MainRestController {
      *
      * @param categoryID   The categoryID of the Category that will be updated.
      * @param categoryName The new name of the to be updated Category (empty String if not updated).
+     * @param pSessionID   The custom sessionID specified as a request parameter.
+     * @param hSessionID   The custom sessionID specified in the HTTP header.
      * @return The Category updated using this method.
      */
     @RequestMapping(method = RequestMethod.PUT,
             value = RestControllerConstants.URI_PREFIX + "/categories/{categoryID}")
     public Category putCategory(@PathVariable String categoryID,
-                                @RequestParam(value = "name", defaultValue = "") String categoryName) {
-        return model.putCategory(this.getSessionID(), categoryID, categoryName);
+                                @RequestParam(value = "name", defaultValue = "") String categoryName,
+                                @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                                @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        return model.putCategory(this.getSessionID(pSessionID, hSessionID), categoryID, categoryName);
     }
 
     /**
      * Method used to remove a certain Category belonging to the user issuing the current request.
      *
      * @param categoryID The categoryID of the Category that will be deleted.
+     * @param pSessionID The custom sessionID specified as a request parameter.
+     * @param hSessionID The custom sessionID specified in the HTTP header.
      */
     @RequestMapping(method = RequestMethod.DELETE,
             value = RestControllerConstants.URI_PREFIX + "/categories/{categoryID}")
-    public void deleteCategory(@PathVariable String categoryID) {
-        model.deleteCategory(this.getSessionID(), categoryID);
+    public void deleteCategory(@PathVariable String categoryID,
+                               @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
+                               @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
+        model.deleteCategory(this.getSessionID(pSessionID, hSessionID), categoryID);
     }
 
 }
