@@ -109,6 +109,10 @@ AND category_id = ?;
 DELETE FROM Transaction_Category
 WHERE transaction_id = ?;
 
+	unlinkCategoryFromAllTransaction(category_id):
+DELETE FROM Transaction_Category
+WHERE category_id = ?;
+
 	linkUserToCategory(session_id, category_id):
 INSERT INTO User_Category (session_id, category_id)
 VALUES (?, ?);
@@ -119,7 +123,7 @@ WHERE session_id = ?
 AND category_id = ?;
 
 	getCategoryIDByTransactionID(transaction_id):
-SELECT c.category_id
-FROM Category c, User_Category uc
-WHERE c.category_id = uc.category_id
-AND c.category_id = ?;
+SELECT tc.category_id
+FROM Money_Transaction t, Transaction_Category tc
+WHERE t.transaction_id = tc.transaction_id
+AND t.transaction_id = ?;
