@@ -7,7 +7,7 @@ SELECT transaction_id, name, amount
 FROM Money_Transaction
 WHERE transaction_id = ?;
 
-	getTransaction(session_id, transaction_id):
+	getTransactionBySessionID(session_id, transaction_id):
 SELECT t.transaction_id, t.name, t.amount
 FROM Money_Transaction t, User_Transaction ut
 WHERE t.transaction_id = ut.transaction_id
@@ -33,7 +33,7 @@ DELETE FROM Money_Transaction
 WHERE transaction_id = ?;
 
 	getTransactions(session_id, limit, offset):
-SELECT t.transaction, t.name, t.amount
+SELECT t.transaction_id, t.name, t.amount
 FROM Money_Transaction t, User_Transaction ut
 WHERE t.transaction_id = ut.transaction_id
 AND ut.session_id = ?
@@ -41,7 +41,7 @@ LIMIT ?
 OFFSET ?;
 
 	getTransactionsByCategoryID(session_id, category_id, limit, offset):
-SELECT t.transaction, t.name, t.amount
+SELECT t.transaction_id, t.name, t.amount
 FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc
 WHERE t.transaction_id = ut.transaction_id
 AND t.transaction_id = tc.transaction_id
@@ -58,3 +58,58 @@ VALUES (?, ?);
 DELETE FROM User_Transaction
 WHERE session_id = ?
 AND transaction_id = ?;
+
+	createCategory(name):
+INSERT INTO Category (name)
+VALUES (?);
+
+	getCategory(category_id):
+SELECT category_id, name
+FROM Category
+WHERE category_id = ?;
+
+	getCategoryBySessionID(session_id, category_id):
+SELECT c.category_id, c.name
+FROM Category c, User_Category uc
+WHERE c.category_id = uc.category_id
+AND uc.session_id = ?
+AND c.category_id = ?;
+
+	getNewestCategoryID():
+SELECT MAX(category_id)
+FROM Category;
+
+	updateCategoryName(name, category_id):
+UPDATE Category
+SET name = ?
+WHERE category_id = ?;
+
+	deleteCategory(category_id):
+DELETE FROM Category
+WHERE category_id = ?;
+
+	getCategories(session_id, limit, offset):
+SELECT c.category_id, c.name
+FROM Category c, User_Category uc
+WHERE c.category_id = uc.category_id
+AND uc.session_id = ?
+LIMIT ?
+OFFSET ?;
+
+	linkTransactionToCategory(transaction_id, category_id):
+INSERT INTO Transaction_Category (transaction_id, category_id)
+VALUES (?, ?);
+
+	unlinkTransactionFromCategory(transaction_id, category_id):
+DELETE FROM Transaction_Category
+WHERE transaction_id = ?
+AND category_id = ?;
+
+	linkUserToCategory(session_id, category_id):
+INSERT INTO User_Category (session_id, category_id)
+VALUES (?, ?);
+
+	unlinkUserFromCategory(session_id, category_id):
+DELETE FROM User_Category
+WHERE session_id = ?
+AND category_id = ?;
