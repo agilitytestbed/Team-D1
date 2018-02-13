@@ -11,7 +11,7 @@ WHERE transaction_id = ?;
 SELECT t.transaction_id, t.name, t.amount
 FROM Money_Transaction t, User_Transaction ut
 WHERE t.transaction_id = ut.transaction_id
-AND u.session_id = ?
+AND ut.session_id = ?
 AND t.transaction_id = ?;
 
 	getNewestTransactionID():
@@ -105,6 +105,10 @@ DELETE FROM Transaction_Category
 WHERE transaction_id = ?
 AND category_id = ?;
 
+	unlinkTransactionFromAllCategories(transaction_id):
+DELETE FROM Transaction_Category
+WHERE transaction_id = ?;
+
 	linkUserToCategory(session_id, category_id):
 INSERT INTO User_Category (session_id, category_id)
 VALUES (?, ?);
@@ -113,3 +117,9 @@ VALUES (?, ?);
 DELETE FROM User_Category
 WHERE session_id = ?
 AND category_id = ?;
+
+	getCategoryIDByTransactionID(transaction_id):
+SELECT c.category_id
+FROM Category c, User_Category uc
+WHERE c.category_id = uc.category_id
+AND c.category_id = ?;
