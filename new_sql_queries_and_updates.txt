@@ -1,0 +1,60 @@
+	createTransaction(name, amount):
+INSERT INTO Money_Transaction (name, amount)
+VALUES (?, ?);
+
+	getTransaction(transaction_id):
+SELECT transaction_id, name, amount
+FROM Money_Transaction
+WHERE transaction_id = ?;
+
+	getTransaction(session_id, transaction_id):
+SELECT t.transaction_id, t.name, t.amount
+FROM Money_Transaction t, User_Transaction ut
+WHERE t.transaction_id = ut.transaction_id
+AND u.session_id = ?
+AND t.transaction_id = ?;
+
+	getNewestTransactionID():
+SELECT MAX(transaction_id)
+FROM Money_Transaction;
+
+	updateTransactionName(name, transaction_id):
+UPDATE Money_Transaction
+SET name = ?
+WHERE transaction_id = ?;
+
+	updateTransactionAmount(amount, transaction_id):
+UPDATE Money_Transaction
+SET amount = ?
+WHERE transaction_id = ?;
+
+	deleteTransaction(transaction_id):
+DELETE FROM Money_Transaction
+WHERE transaction_id = ?;
+
+	getTransactions(session_id, limit, offset):
+SELECT t.transaction, t.name, t.amount
+FROM Money_Transaction t, User_Transaction ut
+WHERE t.transaction_id = ut.transaction_id
+AND ut.session_id = ?
+LIMIT ?
+OFFSET ?;
+
+	getTransactionsByCategoryID(session_id, category_id, limit, offset):
+SELECT t.transaction, t.name, t.amount
+FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc
+WHERE t.transaction_id = ut.transaction_id
+AND t.transaction_id = tc.transaction_id
+AND ut.session_id = ?
+AND tc.category_id = ?
+LIMIT ?
+OFFSET ?;
+
+	linkUserToTransaction(session_id, transaction_id):
+INSERT INTO User_Transaction (session_id, transaction_id)
+VALUES (?, ?);
+
+	unlinkUserFromTransaction(session_id, transaction_id):
+DELETE FROM User_Transaction
+WHERE session_id = ?
+AND transaction_id = ?;
