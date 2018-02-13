@@ -50,6 +50,17 @@ AND tc.category_id = ?
 LIMIT ?
 OFFSET ?;
 
+	getTransactionsByCategoryName(session_id, name, limit, offset):
+SELECT t.transaction_id, t.name, t.amount
+FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc, Category c
+WHERE t.transaction_id = ut.transaction_id
+AND t.transaction_id = tc.transaction_id
+AND tc.category_id = c.category_id
+AND ut.session_id = ?
+AND c.name = ?
+LIMIT ?
+OFFSET ?;
+
 	linkUserToTransaction(session_id, transaction_id):
 INSERT INTO User_Transaction (session_id, transaction_id)
 VALUES (?, ?);

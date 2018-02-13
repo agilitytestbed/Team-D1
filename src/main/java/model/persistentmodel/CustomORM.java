@@ -60,6 +60,16 @@ public class CustomORM {
                     "AND tc.category_id = ?\n" +
                     "LIMIT ?\n" +
                     "OFFSET ?;";
+    private static final String GET_TRANSACTIONS_BY_CATEGORY_NAME =
+            "SELECT t.transaction_id, t.name, t.amount\n" +
+                    "FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc, Category c\n" +
+                    "WHERE t.transaction_id = ut.transaction_id\n" +
+                    "AND t.transaction_id = tc.transaction_id\n" +
+                    "AND tc.category_id = c.category_id\n" +
+                    "AND ut.session_id = ?\n" +
+                    "AND c.name = ?\n" +
+                    "LIMIT ?\n" +
+                    "OFFSET ?;";
     private static final String LINK_USER_TO_TRANSACTION =
             "INSERT INTO User_Transaction (session_id, transaction_id)\n" +
                     "VALUES (?, ?);";
@@ -320,6 +330,37 @@ public class CustomORM {
                 String name = resultSet.getString(2);
                 long amount = resultSet.getLong(3);
                 transactions.add(new Transaction(transactionID, name, amount));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
+    }
+
+    /**
+     * Method used to retrieve a batch of Transaction objects
+     * belonging to a certain user and category from the database.
+     *
+     * @param sessionID The sessionID of the user to who the to be retrieved Transaction objects belong.
+     * @param name      The name of the Category to which the retrieved Transaction objects belong.
+     * @param limit     The (maximum) amount of Transaction objects to be retrieved.
+     * @param offset    The starting index to retrieve Transaction objects.
+     * @return An ArrayList of Transaction objects.
+     */
+    public ArrayList<Transaction> getTransactionsByCategoryName(String sessionID, String name, int limit, int offset) {
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_BY_CATEGORY_NAME);
+            statement.setString(1, sessionID);
+            statement.setString(2, name);
+            statement.setInt(3, limit);
+            statement.setInt(4, offset);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int transactionID = resultSet.getInt(1);
+                String transactionName = resultSet.getString(2);
+                long amount = resultSet.getLong(3);
+                transactions.add(new Transaction(transactionID, transactionName, amount));
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -32,18 +32,18 @@ public class PersistentModel implements Model {
     /**
      * Method used to retrieve the transactions belonging to a certain user.
      *
-     * @param sessionID  The sessionID of the user.
-     * @param categoryID The categoryID to be filtered on (empty String if no filter).
-     * @param limit      The maximum amount of transactions to be fetched.
-     * @param offset     The starting index to fetch transactions.
+     * @param sessionID    The sessionID of the user.
+     * @param categoryName The categoryID to be filtered on (empty String if no filter).
+     * @param limit        The maximum amount of transactions to be fetched.
+     * @param offset       The starting index to fetch transactions.
      * @return An ArrayList of Transaction belonging to the user with sessionID.
      */
-    public ArrayList<Transaction> getTransactions(String sessionID, String categoryID, String limit, String offset) {
+    public ArrayList<Transaction> getTransactions(String sessionID, String categoryName, String limit, String offset) {
         ArrayList<Transaction> transactions;
-        if (categoryID.equals("")) {
+        if (categoryName.equals("")) {
             transactions = customORM.getTransactions(sessionID, Integer.parseInt(limit), Integer.parseInt(offset));
         } else {
-            transactions = customORM.getTransactionsByCategoryID(sessionID, Integer.parseInt(categoryID),
+            transactions = customORM.getTransactionsByCategoryName(sessionID, categoryName,
                     Integer.parseInt(limit), Integer.parseInt(offset));
         }
         for (Transaction transaction : transactions) {
@@ -85,7 +85,9 @@ public class PersistentModel implements Model {
      * @return The Transaction with transactionID belonging to the user with sessionID.
      */
     public Transaction getTransaction(String sessionID, String transactionID) {
-        return customORM.getTransactionBySessionID(sessionID, Integer.parseInt(transactionID));
+        Transaction transaction = customORM.getTransactionBySessionID(sessionID, Integer.parseInt(transactionID));
+        this.populateCategory(transaction);
+        return transaction;
     }
 
     /**
