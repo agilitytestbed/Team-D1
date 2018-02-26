@@ -1,6 +1,6 @@
-package api;
+package nl.utwente.ing.api;
 
-import model.persistentmodel.DatabaseConnection;
+import nl.utwente.ing.model.persistentmodel.DatabaseConnection;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

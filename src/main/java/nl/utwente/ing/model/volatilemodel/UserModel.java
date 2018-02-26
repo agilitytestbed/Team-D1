@@ -1,7 +1,7 @@
-package model.volatilemodel;
+package nl.utwente.ing.model.volatilemodel;
 
-import model.bean.Category;
-import model.bean.Transaction;
+import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.Transaction;
 
 import java.util.ArrayList;
 

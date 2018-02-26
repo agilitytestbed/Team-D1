@@ -1,4 +1,4 @@
-package api;
+package nl.utwente.ing.api;
 
 /**
  * The RestControllerConstants class.

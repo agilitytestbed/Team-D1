@@ -1,8 +1,8 @@
-package model.persistentmodel;
+package nl.utwente.ing.model.persistentmodel;
 
-import model.Model;
-import model.bean.Category;
-import model.bean.Transaction;
+import nl.utwente.ing.model.Model;
+import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.Transaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;

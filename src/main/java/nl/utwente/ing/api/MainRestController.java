@@ -1,9 +1,9 @@
-package api;
+package nl.utwente.ing.api;
 
-import model.Model;
-import model.bean.Category;
-import model.bean.Transaction;
-import model.persistentmodel.PersistentModel;
+import nl.utwente.ing.model.Model;
+import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.Transaction;
+import nl.utwente.ing.model.persistentmodel.PersistentModel;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -65,6 +65,7 @@ public class MainRestController {
                                                   @RequestParam(value = "sessionID", defaultValue = "") String pSessionID,
                                                   @RequestHeader(value = "sessionID", defaultValue = "") String hSessionID) {
         return model.getTransactions(this.getSessionID(pSessionID, hSessionID), category, limit, offset);
+
     }
 
     /**

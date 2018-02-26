@@ -1,4 +1,4 @@
-package model.bean;
+package nl.utwente.ing.model.bean;
 
 /**
  * The Transaction class.

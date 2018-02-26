@@ -1,9 +1,12 @@
-package model.persistentmodel;
+package nl.utwente.ing.model.persistentmodel;
 
-import model.bean.Category;
-import model.bean.Transaction;
+import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.Transaction;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 /**

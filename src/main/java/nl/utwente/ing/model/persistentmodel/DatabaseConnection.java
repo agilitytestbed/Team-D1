@@ -1,4 +1,4 @@
-package model.persistentmodel;
+package nl.utwente.ing.model.persistentmodel;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
