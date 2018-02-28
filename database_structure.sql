@@ -1,32 +1,35 @@
-CREATE TABLE IF NOT EXISTS Money_Transaction(
-  transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name text,
-  amount bigint
+CREATE TABLE IF NOT EXISTS User_Table(
+  user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT,
+  highest_transaction_id BIGINT,
+  highest_category_id BIGINT
 );
 
-CREATE TABLE IF NOT EXISTS Category(
-  category_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name text
+CREATE TABLE IF NOT EXISTS Transaction_Table(
+  user_id INTEGER,
+  transaction_id BIGINT,
+  date DATETIME,
+  amount FLOAT,
+  external_iban TEXT,
+  type TEXT,
+  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
+  PRIMARY KEY(user_id, transaction_id)
+);
+
+CREATE TABLE IF NOT EXISTS Category_Table(
+  user_id INTEGER,
+  category_id BIGINT,
+  name TEXT,
+  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
+  PRIMARY KEY(user_id, category_id)
 );
 
 CREATE TABLE IF NOT EXISTS Transaction_Category(
-  transaction_id int,
-  category_id int,
-  FOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id) ON DELETE CASCADE,
-  FOREIGN KEY(category_id) REFERENCES Category(category_id) ON DELETE CASCADE,
-  PRIMARY KEY(transaction_id, category_id)
-);
-
-CREATE TABLE IF NOT EXISTS User_Transaction(
-  session_id text,
-  transaction_id int,
-  FOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id) ON DELETE CASCADE,
-  PRIMARY KEY(session_id, transaction_id)
-);
-
-CREATE TABLE IF NOT EXISTS User_Category(
-  session_id text,
-  category_id int,
-  FOREIGN KEY(category_id) REFERENCES Category(category_id) ON DELETE CASCADE,
-  PRIMARY KEY(session_id, category_id)
+  user_id INTEGER,
+  transaction_id BIGINT,
+  category_id BIGINT,
+  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
+  FOREIGN KEY(transaction_id) REFERENCES Transaction_Table(transaction_id),
+  FOREIGN KEY(category_id) REFERENCES Category_Table(category_id),
+  PRIMARY KEY(user_id, transaction_id, category_id)
 );

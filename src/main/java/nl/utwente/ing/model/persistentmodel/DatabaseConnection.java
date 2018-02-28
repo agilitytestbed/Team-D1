@@ -47,41 +47,43 @@ public class DatabaseConnection {
             connection.setAutoCommit(false);
             Statement statement = connection.createStatement();
             statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS Money_Transaction(\n" +
-                            "\ttransaction_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                            "\tname text,\n" +
-                            "\tamount bigint\n" +
+                    "CREATE TABLE IF NOT EXISTS User_Table(\n" +
+                            "  user_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                            "  session_id TEXT,\n" +
+                            "  highest_transaction_id BIGINT,\n" +
+                            "  highest_category_id BIGINT\n" +
                             ");"
             );
             statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS Category(\n" +
-                            "\tcategory_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                            "\tname text\n" +
+                    "CREATE TABLE IF NOT EXISTS Transaction_Table(\n" +
+                            "  user_id INTEGER,\n" +
+                            "  transaction_id BIGINT,\n" +
+                            "  date DATETIME,\n" +
+                            "  amount FLOAT,\n" +
+                            "  external_iban TEXT,\n" +
+                            "  type TEXT,\n" +
+                            "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                            "  PRIMARY KEY(user_id, transaction_id)\n" +
+                            ");"
+            );
+            statement.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS Category_Table(\n" +
+                            "  user_id INTEGER,\n" +
+                            "  category_id BIGINT,\n" +
+                            "  name TEXT,\n" +
+                            "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                            "  PRIMARY KEY(user_id, category_id)\n" +
                             ");"
             );
             statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS Transaction_Category(\n" +
-                            "\ttransaction_id int,\n" +
-                            "\tcategory_id int,\n" +
-                            "\tFOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id) ON DELETE CASCADE,\n" +
-                            "\tFOREIGN KEY(category_id) REFERENCES Category(category_id) ON DELETE CASCADE,\n" +
-                            "\tPRIMARY KEY(transaction_id, category_id)\n" +
-                            ");"
-            );
-            statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS User_Transaction(\n" +
-                            "\tsession_id text,\n" +
-                            "\ttransaction_id int,\n" +
-                            "\tFOREIGN KEY(transaction_id) REFERENCES Money_Transaction(transaction_id) ON DELETE CASCADE,\n" +
-                            "\tPRIMARY KEY(session_id, transaction_id)\n" +
-                            ");"
-            );
-            statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS User_Category(\n" +
-                            "\tsession_id text,\n" +
-                            "\tcategory_id int,\n" +
-                            "\tFOREIGN KEY(category_id) REFERENCES Category(category_id) ON DELETE CASCADE,\n" +
-                            "\tPRIMARY KEY(session_id, category_id)\n" +
+                            "  user_id INTEGER,\n" +
+                            "  transaction_id BIGINT,\n" +
+                            "  category_id BIGINT,\n" +
+                            "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                            "  FOREIGN KEY(transaction_id) REFERENCES Transaction_Table(transaction_id),\n" +
+                            "  FOREIGN KEY(category_id) REFERENCES Category_Table(category_id),\n" +
+                            "  PRIMARY KEY(user_id, transaction_id, category_id)\n" +
                             ");"
             );
             statement.close();
