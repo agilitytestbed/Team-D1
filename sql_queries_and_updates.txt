@@ -1,140 +1,142 @@
-	createTransaction(name, amount):
-INSERT INTO Money_Transaction (name, amount)
-VALUES (?, ?);
+	increaseHighestTransactionID(user_id):
+UPDATE User_Table
+SET highest_transaction_id = highest_transaction_id + 1
+WHERE user_id = ?;
 
-	getTransaction(transaction_id):
-SELECT transaction_id, name, amount
-FROM Money_Transaction
-WHERE transaction_id = ?;
+	getHighestTransactionID(user_id):
+SELECT highest_transaction_id
+FROM User_Table
+WHERE user_id = ?;
 
-	getTransactionBySessionID(session_id, transaction_id):
-SELECT t.transaction_id, t.name, t.amount
-FROM Money_Transaction t, User_Transaction ut
-WHERE t.transaction_id = ut.transaction_id
-AND ut.session_id = ?
-AND t.transaction_id = ?;
+	createTransaction(user_id, transaction_id, date, amount, external_iban, type):
+INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, external_iban, type)
+VALUES (?, ?, ?, ?, ?, ?);
 
-	getNewestTransactionID():
-SELECT MAX(transaction_id)
-FROM Money_Transaction;
+	getTransaction(user_id, transaction_id):
+SELECT transaction_id, date, amount, external_iban, type
+FROM Transaction_Table
+WHERE user_id = ?
+AND transaction_id = ?;
 
-	updateTransactionName(name, transaction_id):
-UPDATE Money_Transaction
-SET name = ?
-WHERE transaction_id = ?;
+	updateTransactionDate(date, user_id, transaction_id):
+UPDATE Transaction_Table
+SET date = ?
+WHERE user_id = ?
+AND transaction_id = ?;
 
-	updateTransactionAmount(amount, transaction_id):
-UPDATE Money_Transaction
+	updateTransactionAmount(amount, user_id, transaction_id):
+UPDATE Transaction_Table
 SET amount = ?
-WHERE transaction_id = ?;
+WHERE user_id = ?
+AND transaction_id = ?;
 
-	deleteTransaction(transaction_id):
-DELETE FROM Money_Transaction
-WHERE transaction_id = ?;
+	updateTransactionExternalIBAN(external_iban, user_id, transaction_id):
+UPDATE Transaction_Table
+SET external_iban = ?
+WHERE user_id = ?
+AND transaction_id = ?;
 
-	getTransactions(session_id, limit, offset):
-SELECT t.transaction_id, t.name, t.amount
-FROM Money_Transaction t, User_Transaction ut
-WHERE t.transaction_id = ut.transaction_id
-AND ut.session_id = ?
+	updateTransactionType(type, user_id, transaction_id):
+UPDATE Transaction_Table
+SET type = ?
+WHERE user_id = ?
+AND transaction_id = ?;
+
+	deleteTransaction(user_id, transaction_id):
+DELETE FROM Transaction_Table
+WHERE user_id = ?
+AND transaction_id = ?;
+
+	getTransactions(user_id, limit, offset):
+SELECT transaction_id, date, amount, external_iban, type
+FROM Transaction_Table
+WHERE user_id = ?
 LIMIT ?
 OFFSET ?;
 
-	getTransactionsByCategoryID(session_id, category_id, limit, offset):
-SELECT t.transaction_id, t.name, t.amount
-FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc
-WHERE t.transaction_id = ut.transaction_id
-AND t.transaction_id = tc.transaction_id
-AND ut.session_id = ?
-AND tc.category_id = ?
-LIMIT ?
-OFFSET ?;
-
-	getTransactionsByCategoryName(session_id, name, limit, offset):
-SELECT t.transaction_id, t.name, t.amount
-FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc, Category c
-WHERE t.transaction_id = ut.transaction_id
-AND t.transaction_id = tc.transaction_id
+	getTransactionsByCategory(user_id, category, limit, offset):
+SELECT transaction_id, date, amount, external_iban, type
+FROM Transaction_Table t, Category_Table c, Transaction_Category tc
+WHERE t.transaction_id = tc.transaction_id
 AND tc.category_id = c.category_id
-AND ut.session_id = ?
+AND t.user_id = tc.user_id
+AND tc.user_id = c.user_id
+AND t.user_id = ?
 AND c.name = ?
 LIMIT ?
 OFFSET ?;
 
-	linkUserToTransaction(session_id, transaction_id):
-INSERT INTO User_Transaction (session_id, transaction_id)
-VALUES (?, ?);
+	increaseHighestCategoryID(user_id):
+UPDATE User_Table
+SET highest_category_id = highest_category_id + 1
+WHERE user_id = ?;
 
-	unlinkUserFromTransaction(session_id, transaction_id):
-DELETE FROM User_Transaction
-WHERE session_id = ?
-AND transaction_id = ?;
+	getHighestCategoryID(user_id):
+SELECT highest_category_id
+FROM User_Table
+WHERE user_id = ?;
 
-	createCategory(name):
-INSERT INTO Category (name)
-VALUES (?);
+	createCategory(user_id, category_id, name):
+INSERT INTO Category_Table (user_id, category_id, name)
+VALUES (?, ?, ?);
 
-	getCategory(category_id):
+	getCategory(user_id, category_id):
 SELECT category_id, name
-FROM Category
-WHERE category_id = ?;
+FROM Category_Table
+WHERE user_id = ?
+AND category_id = ?;
 
-	getCategoryBySessionID(session_id, category_id):
-SELECT c.category_id, c.name
-FROM Category c, User_Category uc
-WHERE c.category_id = uc.category_id
-AND uc.session_id = ?
-AND c.category_id = ?;
-
-	getNewestCategoryID():
-SELECT MAX(category_id)
-FROM Category;
-
-	updateCategoryName(name, category_id):
-UPDATE Category
+	updateCategoryName(name, user_id, category_id):
+UPDATE Category_Table
 SET name = ?
-WHERE category_id = ?;
+WHERE user_id = ?
+AND category_id = ?;
 
-	deleteCategory(category_id):
-DELETE FROM Category
-WHERE category_id = ?;
+	deleteCategory(user_id, category_id):
+DELETE FROM Category_Table
+WHERE user_id = ?
+AND category_id = ?;
 
-	getCategories(session_id, limit, offset):
-SELECT c.category_id, c.name
-FROM Category c, User_Category uc
-WHERE c.category_id = uc.category_id
-AND uc.session_id = ?
+	getCategories(user_id, limit, offset):
+SELECT category_id, name
+FROM Category_Table
+WHERE user_id = ?
 LIMIT ?
 OFFSET ?;
 
-	linkTransactionToCategory(transaction_id, category_id):
-INSERT INTO Transaction_Category (transaction_id, category_id)
-VALUES (?, ?);
+	linkTransactionToCategory(user_id, transaction_id, category_id):
+INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
+VALUES (?, ?, ?);
 
-	unlinkTransactionFromCategory(transaction_id, category_id):
+	unlinkTransactionFromCategory(user_id, transaction_id, category_id):
 DELETE FROM Transaction_Category
-WHERE transaction_id = ?
+WHERE user_id = ?
+AND transaction_id = ?
 AND category_id = ?;
 
-	unlinkTransactionFromAllCategories(transaction_id):
+	unlinkTransactionFromAllCategories(user_id, transaction_id):
 DELETE FROM Transaction_Category
-WHERE transaction_id = ?;
+WHERE user_id = ?
+AND transaction_id = ?;
 
-	unlinkCategoryFromAllTransaction(category_id):
+	unlinkCategoryFromAllTransactions(user_id, category_id):
 DELETE FROM Transaction_Category
-WHERE category_id = ?;
-
-	linkUserToCategory(session_id, category_id):
-INSERT INTO User_Category (session_id, category_id)
-VALUES (?, ?);
-
-	unlinkUserFromCategory(session_id, category_id):
-DELETE FROM User_Category
-WHERE session_id = ?
+WHERE user_id = ?
 AND category_id = ?;
 
-	getCategoryIDByTransactionID(transaction_id):
+	getCategoryIDByTransactionID(user_id, transaction_id):
 SELECT tc.category_id
-FROM Money_Transaction t, Transaction_Category tc
+FROM Transaction_Table t, Transaction_Category tc
 WHERE t.transaction_id = tc.transaction_id
+AND t.user_id = tc.user_id
+AND t.user_id = ?
 AND t.transaction_id = ?;
+
+	createNewUser(session_id):
+INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id)
+VALUES (?, 0, 0);
+
+	getUserID(session_id):
+SELECT user_id
+FROM User_Table
+WHERE session_id = ?;
