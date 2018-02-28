@@ -20,121 +20,124 @@ public class CustomORM {
 
     private Connection connection;
 
+    private static final String INCREASE_HIGHEST_TRANSACTION_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_transaction_id = highest_transaction_id + 1\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_HIGHEST_TRANSACTION_ID =
+            "SELECT highest_transaction_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
     private static final String CREATE_TRANSACTION =
-            "INSERT INTO Money_Transaction (name, amount)\n" +
-                    "VALUES (?, ?);";
+            "INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, external_iban, type)\n" +
+                    "VALUES (?, ?, ?, ?, ?, ?);";
     private static final String GET_TRANSACTION =
-            "SELECT transaction_id, name, amount\n" +
-                    "FROM Money_Transaction\n" +
-                    "WHERE transaction_id = ?;";
-    private static final String GET_TRANSACTION_BY_SESSION_ID =
-            "SELECT t.transaction_id, t.name, t.amount\n" +
-                    "FROM Money_Transaction t, User_Transaction ut\n" +
-                    "WHERE t.transaction_id = ut.transaction_id\n" +
-                    "AND ut.session_id = ?\n" +
-                    "AND t.transaction_id = ?;";
-    private static final String GET_NEWEST_TRANSACTION_ID =
-            "SELECT MAX(transaction_id)\n" +
-                    "FROM Money_Transaction;";
-    private static final String UPDATE_TRANSACTION_NAME =
-            "UPDATE Money_Transaction\n" +
-                    "SET name = ?\n" +
-                    "WHERE transaction_id = ?;";
+            "SELECT transaction_id, date, amount, external_iban, type\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;";
+    private static final String UPDATE_TRANSACTION_DATE =
+            "UPDATE Transaction_Table\n" +
+                    "SET date = ?\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;";
     private static final String UPDATE_TRANSACTION_AMOUNT =
-            "UPDATE Money_Transaction\n" +
+            "UPDATE Transaction_Table\n" +
                     "SET amount = ?\n" +
-                    "WHERE transaction_id = ?;";
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;";
+    private static final String UPDATE_TRANSACTION_EXTERNAL_IBAN =
+            "UPDATE Transaction_Table\n" +
+                    "SET external_iban = ?\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;";
+    private static final String UPDATE_TRANSACTION_TYPE =
+            "UPDATE Transaction_Table\n" +
+                    "SET type = ?\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;";
     private static final String DELETE_TRANSACTION =
-            "DELETE FROM Money_Transaction\n" +
-                    "WHERE transaction_id = ?;";
+            "DELETE FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;\n";
     private static final String GET_TRANSACTIONS =
-            "SELECT t.transaction_id, t.name, t.amount\n" +
-                    "FROM Money_Transaction t, User_Transaction ut\n" +
-                    "WHERE t.transaction_id = ut.transaction_id\n" +
-                    "AND ut.session_id = ?\n" +
+            "SELECT transaction_id, date, amount, external_iban, type\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
                     "LIMIT ?\n" +
                     "OFFSET ?;";
-    private static final String GET_TRANSACTIONS_BY_CATEGORY_ID =
-            "SELECT t.transaction_id, t.name, t.amount\n" +
-                    "FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc\n" +
-                    "WHERE t.transaction_id = ut.transaction_id\n" +
-                    "AND t.transaction_id = tc.transaction_id\n" +
-                    "AND ut.session_id = ?\n" +
-                    "AND tc.category_id = ?\n" +
-                    "LIMIT ?\n" +
-                    "OFFSET ?;";
-    private static final String GET_TRANSACTIONS_BY_CATEGORY_NAME =
-            "SELECT t.transaction_id, t.name, t.amount\n" +
-                    "FROM Money_Transaction t, User_Transaction ut, Transaction_Category tc, Category c\n" +
-                    "WHERE t.transaction_id = ut.transaction_id\n" +
-                    "AND t.transaction_id = tc.transaction_id\n" +
+    private static final String GET_TRANSACTIONS_BY_CATEGORY =
+            "SELECT transaction_id, date, amount, external_iban, type\n" +
+                    "FROM Transaction_Table t, Category_Table c, Transaction_Category tc\n" +
+                    "WHERE t.transaction_id = tc.transaction_id\n" +
                     "AND tc.category_id = c.category_id\n" +
-                    "AND ut.session_id = ?\n" +
+                    "AND t.user_id = tc.user_id\n" +
+                    "AND tc.user_id = c.user_id\n" +
+                    "AND t.user_id = ?\n" +
                     "AND c.name = ?\n" +
                     "LIMIT ?\n" +
                     "OFFSET ?;";
-    private static final String LINK_USER_TO_TRANSACTION =
-            "INSERT INTO User_Transaction (session_id, transaction_id)\n" +
-                    "VALUES (?, ?);";
-    private static final String UNLINK_USER_FROM_TRANSACTION =
-            "DELETE FROM User_Transaction\n" +
-                    "WHERE session_id = ?\n" +
-                    "AND transaction_id = ?;";
+    private static final String INCREASE_HIGHEST_CATEGORY_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_category_id = highest_category_id + 1\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_HIGHEST_CATEGORY_ID =
+            "SELECT highest_category_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
     private static final String CREATE_CATEGORY =
-            "INSERT INTO Category (name)\n" +
-                    "VALUES (?);";
+            "INSERT INTO Category_Table (user_id, category_id, name)\n" +
+                    "VALUES (?, ?, ?);";
     private static final String GET_CATEGORY =
             "SELECT category_id, name\n" +
-                    "FROM Category\n" +
-                    "WHERE category_id = ?;";
-    private static final String GET_CATEGORY_BY_SESSION_ID =
-            "SELECT c.category_id, c.name\n" +
-                    "FROM Category c, User_Category uc\n" +
-                    "WHERE c.category_id = uc.category_id\n" +
-                    "AND uc.session_id = ?\n" +
-                    "AND c.category_id = ?;";
-    private static final String GET_NEWEST_CATEGORY_ID =
-            "SELECT MAX(category_id)\n" +
-                    "FROM Category;";
+                    "FROM Category_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_id = ?;";
     private static final String UPDATE_CATEGORY_NAME =
-            "UPDATE Category\n" +
+            "UPDATE Category_Table\n" +
                     "SET name = ?\n" +
-                    "WHERE category_id = ?;";
+                    "WHERE user_id = ?\n" +
+                    "AND category_id = ?;";
     private static final String DELETE_CATEGORY =
-            "DELETE FROM Category\n" +
-                    "WHERE category_id = ?;";
+            "DELETE FROM Category_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_id = ?;";
     private static final String GET_CATEGORIES =
-            "SELECT c.category_id, c.name\n" +
-                    "FROM Category c, User_Category uc\n" +
-                    "WHERE c.category_id = uc.category_id\n" +
-                    "AND uc.session_id = ?\n" +
+            "SELECT category_id, name\n" +
+                    "FROM Category_Table\n" +
+                    "WHERE user_id = ?\n" +
                     "LIMIT ?\n" +
                     "OFFSET ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
-            "INSERT INTO Transaction_Category (transaction_id, category_id)\n" +
-                    "VALUES (?, ?);";
+            "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
+                    "VALUES (?, ?, ?);";
     private static final String UNLINK_TRANSACTION_FROM_CATEGORY =
             "DELETE FROM Transaction_Category\n" +
-                    "WHERE transaction_id = ?\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?\n" +
                     "AND category_id = ?;";
     private static final String UNLINK_TRANSACTION_FROM_ALL_CATEGORIES =
             "DELETE FROM Transaction_Category\n" +
-                    "WHERE transaction_id = ?;";
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;";
     private static final String UNLINK_CATEGORY_FROM_ALL_TRANSACTIONS =
             "DELETE FROM Transaction_Category\n" +
-                    "WHERE category_id = ?;";
-    private static final String LINK_USER_TO_CATEGORY =
-            "INSERT INTO User_Category (session_id, category_id)\n" +
-                    "VALUES (?, ?);";
-    private static final String UNLINK_USER_FROM_CATEGORY =
-            "DELETE FROM User_Category\n" +
-                    "WHERE session_id = ?\n" +
+                    "WHERE user_id = ?\n" +
                     "AND category_id = ?;";
     private static final String GET_CATEGORY_ID_BY_TRANSACTION_ID =
             "SELECT tc.category_id\n" +
-                    "FROM Money_Transaction t, Transaction_Category tc\n" +
+                    "FROM Transaction_Table t, Transaction_Category tc\n" +
                     "WHERE t.transaction_id = tc.transaction_id\n" +
+                    "AND t.user_id = tc.user_id\n" +
+                    "AND t.user_id = ?\n" +
                     "AND t.transaction_id = ?;";
+    private static final String CREATE_NEW_USER =
+            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id)\n" +
+                    "VALUES (?, 0, 0);";
+    private static final String GET_USER_ID =
+            "SELECT user_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE session_id = ?;";
 
     /**
      * The constructor of CustomORM.
@@ -147,16 +150,59 @@ public class CustomORM {
     }
 
     /**
+     * Method used to increase the highestTransactionID field of a certain user by one in the database.
+     *
+     * @param userID The id of the user whose highestTransactionID field should be increased.
+     */
+    public void increaseHighestTransactionID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_TRANSACTION_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestTransactionID field of a certain user from the database.
+     *
+     * @param userID The id of the user whose highestTransactionID field should be retrieved.
+     * @return The value of the highestTransactionID field of the user with userID.
+     */
+    public long getHighestTransactionID(int userID) {
+        long highestTransactionID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_TRANSACTION_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestTransactionID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestTransactionID;
+    }
+
+    /**
      * Method used to insert a Transaction into the database.
      *
-     * @param name   The name of the to be inserted Transaction.
-     * @param amount The amount (in cents) of the to be inserted Transaction.
+     * @param userID        The id of the user to which this new Transaction will belong.
+     * @param transactionID The transactionID of the to be inserted Transaction.
+     * @param date          The date of the to be inserted Transaction.
+     * @param amount        The amount of the to be inserted Transaction.
+     * @param externalIBAN  The externalIBAN of the to be inserted Transaction.
+     * @param type          The type of the to be inserted Transaction.
      */
-    public void createTransaction(String name, long amount) {
+    public void createTransaction(int userID, long transactionID, String date, float amount, String externalIBAN,
+                                  String type) {
         try {
             PreparedStatement statement = connection.prepareStatement(CREATE_TRANSACTION);
-            statement.setString(1, name);
-            statement.setLong(2, amount);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
+            statement.setString(3, date);
+            statement.setFloat(4, amount);
+            statement.setString(5, externalIBAN);
+            statement.setString(6, type);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -166,19 +212,23 @@ public class CustomORM {
     /**
      * Method used to retrieve a Transaction from the database.
      *
+     * @param userID        The id of the user from which a Transaction should be retrieved.
      * @param transactionID The id of the to be retrieved Transaction.
      * @return A Transaction object containing data retrieved from the database.
      */
-    public Transaction getTransaction(int transactionID) {
+    public Transaction getTransaction(int userID, long transactionID) {
         Transaction transaction = null;
         try {
             PreparedStatement statement = connection.prepareStatement(GET_TRANSACTION);
-            statement.setInt(1, transactionID);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                String name = resultSet.getString(2);
-                long amount = resultSet.getLong(3);
-                transaction = new Transaction(transactionID, name, amount);
+                String date = resultSet.getString(2);
+                float amount = resultSet.getFloat(3);
+                String externalIBAN = resultSet.getString(4);
+                String type = resultSet.getString(5);
+                transaction = new Transaction(transactionID, date, amount, externalIBAN, type);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -187,62 +237,18 @@ public class CustomORM {
     }
 
     /**
-     * Method used to retrieve a Transaction from the database,
-     * on the condition that the user has rights to retrieve the Transaction.
+     * Method used to change the date of a Transaction in the database.
      *
-     * @param sessionID     The sessionID of the user.
-     *                      Used to check whether the user has rights to retrieve the Transaction.
-     * @param transactionID The id of the to be retrieved Transaction.
-     * @return A Transaction object containing data retrieved from the database.
-     */
-    public Transaction getTransactionBySessionID(String sessionID, int transactionID) {
-        Transaction transaction = null;
-        try {
-            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTION_BY_SESSION_ID);
-            statement.setString(1, sessionID);
-            statement.setInt(2, transactionID);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                String name = resultSet.getString(2);
-                long amount = resultSet.getLong(3);
-                transaction = new Transaction(transactionID, name, amount);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return transaction;
-    }
-
-    /**
-     * Method used to retrieve the highest Transaction id from the database.
-     *
-     * @return The highest Transaction id from the database.
-     */
-    public int getNewestTransactionID() {
-        int transactionID = -1;
-        try {
-            PreparedStatement statement = connection.prepareStatement(GET_NEWEST_TRANSACTION_ID);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                transactionID = resultSet.getInt(1);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return transactionID;
-    }
-
-    /**
-     * Method used to change the name of a Transaction in the database.
-     *
-     * @param name          The new name of the Transaction.
+     * @param date          The new date of the Transaction.
+     * @param userID        The id of the user whose Transaction with transactionID will be updated.
      * @param transactionID The id of the to be updated Transaction.
      */
-    public void updateTransactionName(String name, int transactionID) {
+    public void updateTransactionDate(String date, int userID, long transactionID) {
         try {
-            PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSACTION_NAME);
-            statement.setString(1, name);
-            statement.setInt(2, transactionID);
+            PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSACTION_DATE);
+            statement.setString(1, date);
+            statement.setInt(2, userID);
+            statement.setLong(3, transactionID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -250,16 +256,56 @@ public class CustomORM {
     }
 
     /**
-     * Method used to update the amount of a Transaction in the database.
+     * Method used to change the amount of a Transaction in the database.
      *
-     * @param amount        The new amount (in cents) of the Transaction.
-     * @param transactionID The id of the to be updated transaction.
+     * @param amount        The new amount of the Transaction.
+     * @param userID        The id of the user whose Transaction with transactionID will be updated.
+     * @param transactionID The id of the to be updated Transaction.
      */
-    public void updateTransactionAmount(long amount, int transactionID) {
+    public void updateTransactionAmount(float amount, int userID, long transactionID) {
         try {
             PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSACTION_AMOUNT);
-            statement.setLong(1, amount);
-            statement.setInt(2, transactionID);
+            statement.setFloat(1, amount);
+            statement.setInt(2, userID);
+            statement.setLong(3, transactionID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to change the externalIBAN of a Transaction in the database.
+     *
+     * @param externalIBAN  The new externalIBAN of the Transaction.
+     * @param userID        The id of the user whose Transaction with transactionID will be updated.
+     * @param transactionID The id of the to be updated Transaction.
+     */
+    public void updateTransactionExternalIBAN(String externalIBAN, int userID, long transactionID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSACTION_EXTERNAL_IBAN);
+            statement.setString(1, externalIBAN);
+            statement.setInt(2, userID);
+            statement.setLong(3, transactionID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to change the type of a Transaction in the database.
+     *
+     * @param type          The new type of the Transaction.
+     * @param userID        The id of the user whose Transaction with transactionID will be updated.
+     * @param transactionID The id of the to be updated Transaction.
+     */
+    public void updateTransactionType(String type, int userID, long transactionID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSACTION_TYPE);
+            statement.setString(1, type);
+            statement.setInt(2, userID);
+            statement.setLong(3, transactionID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -269,12 +315,14 @@ public class CustomORM {
     /**
      * Method used to delete a Transaction from the database.
      *
+     * @param userID        The id of the user whose Transaction with transactionID will be deleted.
      * @param transactionID The id of the to be deleted Transaction.
      */
-    public void deleteTransaction(int transactionID) {
+    public void deleteTransaction(int userID, long transactionID) {
         try {
             PreparedStatement statement = connection.prepareStatement(DELETE_TRANSACTION);
-            statement.setInt(1, transactionID);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -284,24 +332,26 @@ public class CustomORM {
     /**
      * Method used to retrieve a batch of Transaction objects belonging to a certain user from the database.
      *
-     * @param sessionID The sessionID of the user to who the to be retrieved Transaction objects belong.
-     * @param limit     The (maximum) amount of Transaction objects to be retrieved.
-     * @param offset    The starting index to retrieve Transaction objects.
+     * @param userID The id of the user to who the to be retrieved Transaction objects belong.
+     * @param limit  The (maximum) amount of Transaction objects to be retrieved.
+     * @param offset The starting index to retrieve Transaction objects.
      * @return An ArrayList of Transaction objects.
      */
-    public ArrayList<Transaction> getTransactions(String sessionID, int limit, int offset) {
+    public ArrayList<Transaction> getTransactions(int userID, int limit, int offset) {
         ArrayList<Transaction> transactions = new ArrayList<>();
         try {
             PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS);
-            statement.setString(1, sessionID);
+            statement.setInt(1, userID);
             statement.setInt(2, limit);
             statement.setInt(3, offset);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                int transactionID = resultSet.getInt(1);
-                String name = resultSet.getString(2);
-                long amount = resultSet.getLong(3);
-                transactions.add(new Transaction(transactionID, name, amount));
+                long transactionID = resultSet.getLong(1);
+                String date = resultSet.getString(2);
+                float amount = resultSet.getFloat(3);
+                String externalIBAN = resultSet.getString(4);
+                String type = resultSet.getString(5);
+                transactions.add(new Transaction(transactionID, date, amount, externalIBAN, type));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -313,26 +363,28 @@ public class CustomORM {
      * Method used to retrieve a batch of Transaction objects
      * belonging to a certain user and category from the database.
      *
-     * @param sessionID  The sessionID of the user to who the to be retrieved Transaction objects belong.
-     * @param categoryID The id of the Category to which the retrieved Transaction objects belong.
-     * @param limit      The (maximum) amount of Transaction objects to be retrieved.
-     * @param offset     The starting index to retrieve Transaction objects.
+     * @param userID       The id of the user to who the to be retrieved Transaction objects belong.
+     * @param categoryName The name of the Category to which the retrieved Transaction objects belong.
+     * @param limit        The (maximum) amount of Transaction objects to be retrieved.
+     * @param offset       The starting index to retrieve Transaction objects.
      * @return An ArrayList of Transaction objects.
      */
-    public ArrayList<Transaction> getTransactionsByCategoryID(String sessionID, int categoryID, int limit, int offset) {
+    public ArrayList<Transaction> getTransactionsByCategory(int userID, String categoryName, int limit, int offset) {
         ArrayList<Transaction> transactions = new ArrayList<>();
         try {
-            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_BY_CATEGORY_ID);
-            statement.setString(1, sessionID);
-            statement.setInt(2, categoryID);
+            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_BY_CATEGORY);
+            statement.setInt(1, userID);
+            statement.setString(2, categoryName);
             statement.setInt(3, limit);
             statement.setInt(4, offset);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                int transactionID = resultSet.getInt(1);
-                String name = resultSet.getString(2);
-                long amount = resultSet.getLong(3);
-                transactions.add(new Transaction(transactionID, name, amount));
+                long transactionID = resultSet.getLong(1);
+                String date = resultSet.getString(2);
+                float amount = resultSet.getFloat(3);
+                String externalIBAN = resultSet.getString(4);
+                String type = resultSet.getString(5);
+                transactions.add(new Transaction(transactionID, date, amount, externalIBAN, type));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -341,47 +393,14 @@ public class CustomORM {
     }
 
     /**
-     * Method used to retrieve a batch of Transaction objects
-     * belonging to a certain user and category from the database.
+     * Method used to increase the highestCategoryID field of a certain user by one in the database.
      *
-     * @param sessionID The sessionID of the user to who the to be retrieved Transaction objects belong.
-     * @param name      The name of the Category to which the retrieved Transaction objects belong.
-     * @param limit     The (maximum) amount of Transaction objects to be retrieved.
-     * @param offset    The starting index to retrieve Transaction objects.
-     * @return An ArrayList of Transaction objects.
+     * @param userID The id of the user whose highestCategoryID field should be increased.
      */
-    public ArrayList<Transaction> getTransactionsByCategoryName(String sessionID, String name, int limit, int offset) {
-        ArrayList<Transaction> transactions = new ArrayList<>();
+    public void increaseHighestCategoryID(int userID) {
         try {
-            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_BY_CATEGORY_NAME);
-            statement.setString(1, sessionID);
-            statement.setString(2, name);
-            statement.setInt(3, limit);
-            statement.setInt(4, offset);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                int transactionID = resultSet.getInt(1);
-                String transactionName = resultSet.getString(2);
-                long amount = resultSet.getLong(3);
-                transactions.add(new Transaction(transactionID, transactionName, amount));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return transactions;
-    }
-
-    /**
-     * Method used to link a Transaction to a certain user in the database.
-     *
-     * @param sessionID     The sessionID of the certain user that will be linked to a Transaction.
-     * @param transactionID The id of the Transaction to which the user will be linked.
-     */
-    public void linkUserToTransaction(String sessionID, int transactionID) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(LINK_USER_TO_TRANSACTION);
-            statement.setString(1, sessionID);
-            statement.setInt(2, transactionID);
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_CATEGORY_ID);
+            statement.setInt(1, userID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -389,31 +408,37 @@ public class CustomORM {
     }
 
     /**
-     * Method used to unlink a Transaction from a certain user in the database.
+     * Method used to retrieve the highestCategoryID field of a certain user from the database.
      *
-     * @param sessionID     The sessionID of the certain user that will be unlinked from the Transaction.
-     * @param transactionID The id of the Transaction from which the user will be unlinked.
+     * @param userID The id of the user whose highestCategoryID field should be retrieved.
+     * @return The value of the highestCategoryID field of the user with userID.
      */
-    public void unlinkUserFromTransaction(String sessionID, int transactionID) {
+    public long getHighestCategoryID(int userID) {
+        long highestCategoryID = -1;
         try {
-            PreparedStatement statement = connection.prepareStatement(UNLINK_USER_FROM_TRANSACTION);
-            statement.setString(1, sessionID);
-            statement.setInt(2, transactionID);
-            statement.executeUpdate();
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_CATEGORY_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestCategoryID = rs.getLong(1);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return highestCategoryID;
     }
 
     /**
      * Method used to insert a new Category into the database.
      *
-     * @param name The name of the to be inserted Category.
+     * @param userID     The id of the user to which this new Category will belong.
+     * @param categoryID The categoryID of the to be inserted Category.
+     * @param name       The name of the to be inserted Category.
      */
-    public void createCategory(String name) {
+    public void createCategory(int userID, long categoryID, String name) {
         try {
             PreparedStatement statement = connection.prepareStatement(CREATE_CATEGORY);
-            statement.setString(1, name);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryID);
+            statement.setString(3, name);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -423,14 +448,16 @@ public class CustomORM {
     /**
      * Method used to retrieve a Category from the database.
      *
+     * @param userID     The id of the user from which a Category should be retrieved.
      * @param categoryID The id of the to be retrieved Category.
      * @return A Category object containing data retrieved from the database.
      */
-    public Category getCategory(int categoryID) {
+    public Category getCategory(int userID, long categoryID) {
         Category category = null;
         try {
             PreparedStatement statement = connection.prepareStatement(GET_CATEGORY);
-            statement.setInt(1, categoryID);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryID);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 String name = resultSet.getString(2);
@@ -440,64 +467,21 @@ public class CustomORM {
             e.printStackTrace();
         }
         return category;
-    }
-
-    /**
-     * Method used to retrieve a Category from the database,
-     * on the condition that the user has rights to retrieve the Category.
-     *
-     * @param sessionID  The sessionID of the user.
-     *                   Used to check whether the user has rights to retrieve the Category.
-     * @param categoryID The id of the to be retrieved Category.
-     * @return A Category object containing data retrieved from the database.
-     */
-    public Category getCategoryBySessionID(String sessionID, int categoryID) {
-        Category category = null;
-        try {
-            PreparedStatement statement = connection.prepareStatement(GET_CATEGORY_BY_SESSION_ID);
-            statement.setString(1, sessionID);
-            statement.setInt(2, categoryID);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                String name = resultSet.getString(2);
-                category = new Category(categoryID, name);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return category;
-    }
-
-    /**
-     * Method used to retrieve the highest Category id from the database.
-     *
-     * @return The highest Category id from the database.
-     */
-    public int getNewestCategoryID() {
-        int categoryID = -1;
-        try {
-            PreparedStatement statement = connection.prepareStatement(GET_NEWEST_CATEGORY_ID);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                categoryID = resultSet.getInt(1);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return categoryID;
     }
 
     /**
      * Method used to update the name of a Category in the database.
      *
      * @param name       The new name of the to be updated Category.
+     * @param userID     The id of the user whose Category with categoryID will be updated.
      * @param categoryID The id of the to be updated Category.
      */
-    public void updateCategoryName(String name, int categoryID) {
+    public void updateCategoryName(String name, int userID, long categoryID) {
         try {
             PreparedStatement statement = connection.prepareStatement(UPDATE_CATEGORY_NAME);
             statement.setString(1, name);
-            statement.setInt(2, categoryID);
+            statement.setInt(2, userID);
+            statement.setLong(3, categoryID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -507,12 +491,14 @@ public class CustomORM {
     /**
      * Method used to delete a Category from the database.
      *
+     * @param userID     The id of the user whose Category with categoryID will me deleted.
      * @param categoryID The id of the to be deleted Category.
      */
-    public void deleteCategory(int categoryID) {
+    public void deleteCategory(int userID, long categoryID) {
         try {
             PreparedStatement statement = connection.prepareStatement(DELETE_CATEGORY);
-            statement.setInt(1, categoryID);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -522,16 +508,16 @@ public class CustomORM {
     /**
      * Method used to retrieve a batch of Category objects belonging to a certain user from the database.
      *
-     * @param sessionID The sessionID of the user to who the to be retrieved Category objects belong.
-     * @param limit     The (maximum) amount of Category objects to be retrieved.
-     * @param offset    The starting index to retrieve Category objects.
+     * @param userID The id of the user to who the to be retrieved Category objects belong.
+     * @param limit  The (maximum) amount of Category objects to be retrieved.
+     * @param offset The starting index to retrieve Category objects.
      * @return An ArrayList of Category objects.
      */
-    public ArrayList<Category> getCategories(String sessionID, int limit, int offset) {
+    public ArrayList<Category> getCategories(int userID, int limit, int offset) {
         ArrayList<Category> categories = new ArrayList<>();
         try {
             PreparedStatement statement = connection.prepareStatement(GET_CATEGORIES);
-            statement.setString(1, sessionID);
+            statement.setInt(1, userID);
             statement.setInt(2, limit);
             statement.setInt(3, offset);
             ResultSet resultSet = statement.executeQuery();
@@ -549,14 +535,16 @@ public class CustomORM {
     /**
      * Method used to link a Transaction to a Category in the database.
      *
+     * @param userID        The id of the user to who the to be linked Transaction and Category objects belong.
      * @param transactionID The id of the Transaction that will be linked to a Category.
-     * @param categoryID    The id of the Category to which the Transaction will be linked.
+     * @param categoryID    The id of the Category that will be linked to a Transaction.
      */
-    public void linkTransactionToCategory(int transactionID, int categoryID) {
+    public void linkTransactionToCategory(int userID, long transactionID, long categoryID) {
         try {
             PreparedStatement statement = connection.prepareStatement(LINK_TRANSACTION_TO_CATEGORY);
-            statement.setInt(1, transactionID);
-            statement.setInt(2, categoryID);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
+            statement.setLong(3, categoryID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -566,14 +554,16 @@ public class CustomORM {
     /**
      * Method used to unlink a Transaction from a Category in the database.
      *
+     * @param userID        The id of the user to who the to be unlinked Transaction and Category objects belong.
      * @param transactionID The id of the Transaction that will be unlinked from a Category.
      * @param categoryID    The id of the Category from which the Transaction will be unlinked.
      */
-    public void unlinkTransactionFromCategory(int transactionID, int categoryID) {
+    public void unlinkTransactionFromCategory(int userID, long transactionID, long categoryID) {
         try {
             PreparedStatement statement = connection.prepareStatement(UNLINK_TRANSACTION_FROM_CATEGORY);
-            statement.setInt(1, transactionID);
-            statement.setInt(2, categoryID);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
+            statement.setLong(3, categoryID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -583,12 +573,14 @@ public class CustomORM {
     /**
      * Method used to unlink a Transaction from all Category objects in the database.
      *
+     * @param userID        The id of the user to who the to be unlinked Transaction object belongs.
      * @param transactionID The id of the Transaction that will be unlinked from all Category objects in the database.
      */
-    public void unlinkTransactionFromAllCategories(int transactionID) {
+    public void unlinkTransactionFromAllCategories(int userID, long transactionID) {
         try {
             PreparedStatement statement = connection.prepareStatement(UNLINK_TRANSACTION_FROM_ALL_CATEGORIES);
-            statement.setInt(1, transactionID);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -598,12 +590,14 @@ public class CustomORM {
     /**
      * Method used to unlink a Category from all Transaction objects in the database.
      *
+     * @param userID     The id of the user to who the to be unlinked Category object belongs.
      * @param categoryID The id of the Category that will be unlinked from all Transaction objects in the database.
      */
-    public void unlinkCategoryFromAllTransactions(int categoryID) {
+    public void unlinkCategoryFromAllTransactions(int userID, long categoryID) {
         try {
             PreparedStatement statement = connection.prepareStatement(UNLINK_CATEGORY_FROM_ALL_TRANSACTIONS);
-            statement.setInt(1, categoryID);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -611,58 +605,62 @@ public class CustomORM {
     }
 
     /**
-     * Method used to link a Category to a certain user in the database.
+     * Method used to retrieve the id of the Category that is linked to a certain Transaction from the database.
      *
-     * @param sessionID  The sessionID of the certain user that will be linked to a Category.
-     * @param categoryID The id of the Category to which the user will be linked.
-     */
-    public void linkUserToCategory(String sessionID, int categoryID) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(LINK_USER_TO_CATEGORY);
-            statement.setString(1, sessionID);
-            statement.setInt(2, categoryID);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Method used to unlink a Category from a certain user in the database.
-     *
-     * @param sessionID  The sessionID of the certain user that will be unlinked from a Category.
-     * @param categoryID The id of the Category from which the user will be unlinked.
-     */
-    public void unlinkUserFromCategory(String sessionID, int categoryID) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(UNLINK_USER_FROM_CATEGORY);
-            statement.setString(1, sessionID);
-            statement.setInt(2, categoryID);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Method used to retrieve the id of the Category that is linked to a certain Transaction.
-     *
+     * @param userID        The id of the user who is the owner of the Transaction object with transactionID.
      * @param transactionID The id of the Transaction from which the linked Category id will be retrieved.
      * @return The id of the Category that is linked to the Transaction.
      */
-    public int getCategoryIDByTransactionID(int transactionID) {
-        int categoryID = -1;
+    public long getCategoryIDByTransactionID(int userID, long transactionID) {
+        long categoryID = -1;
         try {
             PreparedStatement statement = connection.prepareStatement(GET_CATEGORY_ID_BY_TRANSACTION_ID);
-            statement.setInt(1, transactionID);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                categoryID = resultSet.getInt(1);
+                categoryID = resultSet.getLong(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return categoryID;
+    }
+
+    /**
+     * Method used to add a new User with sessionID in the database.
+     *
+     * @param sessionID The sessionID of the to be created User.
+     */
+    public void createNewUser(String sessionID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_NEW_USER);
+            statement.setString(1, sessionID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the userID of the user with sessionID from the database.
+     *
+     * @param sessionID The sessionID of the User whose userID will be retrieved.
+     * @return The userID of the user with sessionID.
+     */
+    public int getUserID(String sessionID) {
+        int userID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_USER_ID);
+            statement.setString(1, sessionID);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                userID = resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userID;
     }
 
 }
