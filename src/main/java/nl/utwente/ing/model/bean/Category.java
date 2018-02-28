@@ -8,38 +8,45 @@ package nl.utwente.ing.model.bean;
  */
 public class Category {
 
-    private int categoryID;
+    private long id;
     private String name;
 
     /**
-     * A constructor of Category.
-     * Used when created a Category without categoryID.
-     *
-     * @param name The name of the to be created Category.
+     * An empty constructor of Category.
+     * Used by the Spring framework.
      */
-    public Category(String name) {
-        this.name = name;
+    public Category() {
+
     }
 
     /**
      * A constructor of Category.
      * Used when created a Category with categoryID.
      *
-     * @param categoryID The ID of the to be created Category.
-     * @param name       The name of the to be created Category.
+     * @param id   The ID of the to be created Category.
+     * @param name The name of the to be created Category.
      */
-    public Category(int categoryID, String name) {
-        this.categoryID = categoryID;
+    public Category(long id, String name) {
+        this.id = id;
         this.name = name;
     }
 
     /**
-     * Method used to retrieve the ID of Category.
+     * Method used to retrieve the id of Category.
      *
-     * @return The ID of Category.
+     * @return The id of Category.
      */
-    public int getCategoryID() {
-        return categoryID;
+    public long getID() {
+        return id;
+    }
+
+    /**
+     * Method used to update the id of Category.
+     *
+     * @param id The new id of Category.
+     */
+    public void setID(long id) {
+        this.id = id;
     }
 
     /**

@@ -8,35 +8,36 @@ package nl.utwente.ing.model.bean;
  */
 public class Transaction {
 
-    private int transactionID;
-    private String name;
-    private long amount;
+    private long id;
+    private String date;
+    private float amount;
+    private String externalIBAN;
+    private String type;
     private Category category;
 
     /**
-     * A constructor of Transaction.
-     * Used when creating a Transaction without a transactionID.
-     *
-     * @param name   The name of the to be created Transaction.
-     * @param amount The amount (in cents) of the to be created Transaction.
+     * An empty constructor of Transaction.
+     * Used by the Spring framework.
      */
-    public Transaction(String name, long amount) {
-        this.name = name;
-        this.amount = amount;
+    public Transaction() {
+
     }
 
     /**
      * A constructor of Transaction.
-     * Used when creating a Transaction with a transactionID.
      *
-     * @param transactionID The ID of the to be created Transaction
-     * @param name          The name of the to be created Transaction.
-     * @param amount        The amount (in cents) of the to be created Transaction.
+     * @param id           The id of the to be created Transaction.
+     * @param date         The date of the to be created Transaction.
+     * @param amount       The amount of the to be created Transaction.
+     * @param externalIBAN The externalIBAN of the to be created Transaction.
+     * @param type         The type of the to be created Transaction.
      */
-    public Transaction(int transactionID, String name, long amount) {
-        this.transactionID = transactionID;
-        this.name = name;
+    public Transaction(long id, String date, float amount, String externalIBAN, String type) {
+        this.id = id;
+        this.date = date;
         this.amount = amount;
+        this.externalIBAN = externalIBAN;
+        this.type = type;
     }
 
     /**
@@ -44,44 +45,89 @@ public class Transaction {
      *
      * @return The ID of Transaction.
      */
-    public int getTransactionID() {
-        return transactionID;
+    public long getID() {
+        return id;
     }
 
     /**
-     * Method used to retrieve the name of Transaction.
+     * Method used to update the id of Transaction.
      *
-     * @return The name of Transaction.
+     * @param id The new id of Transaction.
      */
-    public String getName() {
-        return name;
+    public void setID(long id) {
+        this.id = id;
     }
 
     /**
-     * Method used to update the name of Transaction.
+     * Method used to retrieve the date of Transaction.
      *
-     * @param name The new name of Transaction.
+     * @return The date of Transaction.
      */
-    public void setName(String name) {
-        this.name = name;
+    public String getDate() {
+        return date;
     }
 
     /**
-     * Method used to retrieve the amount (in cents) of Transaction.
+     * Method used to update the date of Transaction.
      *
-     * @return The amount (in cents) of Transaction.
+     * @param date The new date of Transaction.
      */
-    public long getAmount() {
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    /**
+     * Method used to retrieve the amount of Transaction.
+     *
+     * @return The amount of Transaction.
+     */
+    public float getAmount() {
         return amount;
     }
 
     /**
      * Method used to update the amount of Transaction.
      *
-     * @param amount The new amount (in cents) of Transaction.
+     * @param amount The new amount of Transaction.
      */
-    public void setAmount(long amount) {
+    public void setAmount(float amount) {
         this.amount = amount;
+    }
+
+    /**
+     * Method used to retrieve the externalIBAN of Transaction.
+     *
+     * @return The externalIBAN of Transaction.
+     */
+    public String getExternalIBAN() {
+        return externalIBAN;
+    }
+
+    /**
+     * Method used to update the externalIBAN of Transaction.
+     *
+     * @param externalIBAN The new externalIBAN of Transaction.
+     */
+    public void setExternalIBAN(String externalIBAN) {
+        this.externalIBAN = externalIBAN;
+    }
+
+    /**
+     * Method used to retrieve the type of Transaction.
+     *
+     * @return The type of Transaction.
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Method used to update the type of Transaction.
+     *
+     * @param type The new type of Transaction.
+     */
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**
