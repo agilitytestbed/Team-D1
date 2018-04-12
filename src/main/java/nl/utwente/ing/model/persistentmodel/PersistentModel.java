@@ -4,6 +4,7 @@ import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
 import nl.utwente.ing.model.Model;
 import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.Session;
 import nl.utwente.ing.model.bean.Transaction;
 
 import java.sql.Connection;
@@ -296,11 +297,11 @@ public class PersistentModel implements Model {
     }
 
     /**
-     * Method used to create and retrieve a new sessionID.
+     * Method used to create and retrieve a new Session.
      *
-     * @return A new sessionID.
+     * @return A new Session.
      */
-    public String getSessionID() {
+    public Session getSession() {
         /*
         In an exceptionally rare case, it can happen that there will be two users with the same sessionID.
         This only happens when two sessionIDs are generated at exactly the same time and they are the same.
@@ -314,7 +315,7 @@ public class PersistentModel implements Model {
             }
         }
         customORM.createNewUser(sessionID);
-        return sessionID;
+        return new Session(sessionID);
     }
 
     /**

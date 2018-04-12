@@ -3,6 +3,7 @@ package nl.utwente.ing.model;
 import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
 import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.Session;
 import nl.utwente.ing.model.bean.Transaction;
 
 import java.util.ArrayList;
@@ -139,10 +140,10 @@ public interface Model {
     void deleteCategory(String sessionID, long categoryID) throws InvalidSessionIDException, ResourceNotFoundException;
 
     /**
-     * Method used to create and retrieve a new sessionID.
+     * Method used to create and retrieve a new Session.
      *
-     * @return A new sessionID.
+     * @return A new Session.
      */
-    String getSessionID();
+    Session getSession();
 
 }
