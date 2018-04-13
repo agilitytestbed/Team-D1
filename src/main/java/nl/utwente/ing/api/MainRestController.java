@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -153,9 +152,7 @@ public class MainRestController {
             return ResponseEntity.status(200).body(transaction);
         } catch (InvalidSessionIDException e) {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(404).body("Resource not found");
-        } catch (NumberFormatException e) {
+        } catch (ResourceNotFoundException | NumberFormatException e) {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
@@ -196,9 +193,7 @@ public class MainRestController {
             return ResponseEntity.status(200).body(transaction);
         } catch (InvalidSessionIDException e) {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
-        } catch (NumberFormatException e) {
-            return ResponseEntity.status(404).body("Resource not found");
-        } catch (ResourceNotFoundException e) {
+        } catch (NumberFormatException | ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
@@ -223,9 +218,7 @@ public class MainRestController {
             return ResponseEntity.status(204).body("Resource deleted");
         } catch (InvalidSessionIDException e) {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
-        } catch (NumberFormatException e) {
-            return ResponseEntity.status(404).body("Resource not found");
-        } catch (ResourceNotFoundException e) {
+        } catch (NumberFormatException | ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
@@ -254,9 +247,7 @@ public class MainRestController {
             return ResponseEntity.status(200).body(transaction);
         } catch (InvalidSessionIDException e) {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
-        } catch (NumberFormatException e) {
-            return ResponseEntity.status(404).body("Resource not found");
-        } catch (ResourceNotFoundException e) {
+        } catch (NumberFormatException | ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
@@ -345,9 +336,7 @@ public class MainRestController {
             return ResponseEntity.status(200).body(category);
         } catch (InvalidSessionIDException e) {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
-        } catch (NumberFormatException e) {
-            return ResponseEntity.status(404).body("Resource not found");
-        } catch (ResourceNotFoundException e) {
+        } catch (NumberFormatException | ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
@@ -378,9 +367,7 @@ public class MainRestController {
             return ResponseEntity.status(200).body(category);
         } catch (InvalidSessionIDException e) {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
-        } catch (NumberFormatException e) {
-            return ResponseEntity.status(404).body("Resource not found");
-        } catch (ResourceNotFoundException e) {
+        } catch (NumberFormatException | ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
@@ -405,9 +392,7 @@ public class MainRestController {
             return ResponseEntity.status(204).body("Resource deleted");
         } catch (InvalidSessionIDException e) {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
-        } catch (NumberFormatException e) {
-            return ResponseEntity.status(404).body("Resource not found");
-        } catch (ResourceNotFoundException e) {
+        } catch (NumberFormatException | ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
