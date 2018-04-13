@@ -27,6 +27,11 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
+    /**
+     * Method used to enable Cross-Origin Resource Sharing.
+     *
+     * @return WebMvcConfigurerAdapter object.
+     */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurerAdapter() {
