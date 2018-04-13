@@ -74,6 +74,9 @@ public class MainRestController {
         int offsetInt = 0;
         try {
             limitInt = Integer.parseInt(limit);
+            if (limitInt < 1 || limitInt > 100) {
+                limitInt = 20;
+            }
         } catch (NumberFormatException e) {
             // Do nothing
         }
@@ -107,6 +110,9 @@ public class MainRestController {
                                           @RequestBody Transaction t) {
         if (t == null || t.getDate() == null || t.getAmount() == 0 || t.getExternalIBAN() == null || t.getType() == null) {
             return ResponseEntity.status(405).body("Invalid input given");
+        }
+        if (!t.getType().equals("deposit") || !t.getType().equals("withdrawal")) {
+            return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
@@ -172,6 +178,9 @@ public class MainRestController {
                                          @RequestBody Transaction t) {
         if (t == null) {
             return ResponseEntity.status(405).body("Invalid input given");
+        }
+        if (!t.getType().equals("deposit") || !t.getType().equals("withdrawal")) {
+            return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
