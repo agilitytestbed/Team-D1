@@ -64,8 +64,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/transactions")
-    public ResponseEntity getTransactions(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                          @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity getTransactions(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                          @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                           @RequestParam(value = "category", defaultValue = "") String category,
                                           @RequestParam(value = "limit", defaultValue = "20") String limit,
                                           @RequestParam(value = "offset", defaultValue = "0") String offset) {
@@ -104,13 +104,13 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/transactions")
-    public ResponseEntity postTransaction(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                          @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity postTransaction(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                          @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                           @RequestBody Transaction t) {
         if (t == null || t.getDate() == null || t.getAmount() == 0 || t.getExternalIBAN() == null || t.getType() == null) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
-        if (!t.getType().equals("deposit") || !t.getType().equals("withdrawal")) {
+        if (!t.getType().equals("deposit") && !t.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
         try {
@@ -142,8 +142,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}")
-    public ResponseEntity getTransaction(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                         @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity getTransaction(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                         @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                          @PathVariable String transactionID) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
@@ -169,14 +169,14 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.PUT,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}")
-    public ResponseEntity putTransaction(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                         @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity putTransaction(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                         @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                          @PathVariable String transactionID,
                                          @RequestBody Transaction t) {
         if (t == null) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
-        if (!t.getType().equals("deposit") || !t.getType().equals("withdrawal")) {
+        if (!t.getType().equals("deposit") && !t.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
         try {
@@ -208,8 +208,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.DELETE,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}")
-    public ResponseEntity deleteTransaction(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                            @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity deleteTransaction(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                            @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                             @PathVariable String transactionID) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
@@ -235,8 +235,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.PATCH,
             value = RestControllerConstants.URI_PREFIX + "/transactions/{transactionID}/category")
-    public ResponseEntity assignCategoryToTransaction(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                                      @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity assignCategoryToTransaction(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                                      @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                                       @PathVariable String transactionID,
                                                       @RequestBody Map<String, String> body) {
         try {
@@ -264,8 +264,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/categories")
-    public ResponseEntity getCategories(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                        @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity getCategories(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                        @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                         @RequestParam(value = "limit", defaultValue = "20") String limit,
                                         @RequestParam(value = "offset", defaultValue = "0") String offset) {
         int limitInt = 20;
@@ -300,8 +300,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/categories")
-    public ResponseEntity postCategory(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                       @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity postCategory(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                       @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                        @RequestBody Category c) {
         if (c == null || c.getName() == null) {
             return ResponseEntity.status(405).body("Invalid input given");
@@ -326,8 +326,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/categories/{categoryID}")
-    public ResponseEntity getCategory(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                      @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity getCategory(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                      @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                       @PathVariable String categoryID) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
@@ -353,8 +353,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.PUT,
             value = RestControllerConstants.URI_PREFIX + "/categories/{categoryID}")
-    public ResponseEntity putCategory(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                      @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity putCategory(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                      @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                       @PathVariable String categoryID,
                                       @RequestBody Category c) {
         if (c == null) {
@@ -382,8 +382,8 @@ public class MainRestController {
      */
     @RequestMapping(method = RequestMethod.DELETE,
             value = RestControllerConstants.URI_PREFIX + "/categories/{categoryID}")
-    public ResponseEntity deleteCategory(@RequestParam(value = "WWW_Authenticate", defaultValue = "") String pSessionID,
-                                         @RequestHeader(value = "WWW_Authenticate", defaultValue = "") String hSessionID,
+    public ResponseEntity deleteCategory(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                         @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                          @PathVariable String categoryID) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
