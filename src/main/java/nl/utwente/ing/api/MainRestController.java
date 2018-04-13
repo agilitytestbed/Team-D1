@@ -238,11 +238,11 @@ public class MainRestController {
     public ResponseEntity assignCategoryToTransaction(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
                                                       @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                                       @PathVariable String transactionID,
-                                                      @RequestBody Map<String, String> body) {
+                                                      @RequestBody Map<String, Long> body) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
             long transactionIDLong = Long.parseLong(transactionID);
-            long categoryIDLong = Long.parseLong(body.get("category_id"));
+            long categoryIDLong = body.get("category_id");
             Transaction transaction = model.assignCategoryToTransaction(sessionID, transactionIDLong, categoryIDLong);
             return ResponseEntity.status(200).body(transaction);
         } catch (InvalidSessionIDException e) {
@@ -357,7 +357,7 @@ public class MainRestController {
                                       @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                       @PathVariable String categoryID,
                                       @RequestBody Category c) {
-        if (c == null) {
+        if (c == null || c.getName() == null) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
         try {

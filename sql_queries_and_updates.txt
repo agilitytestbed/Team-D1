@@ -55,7 +55,7 @@ LIMIT ?
 OFFSET ?;
 
 	getTransactionsByCategory(user_id, category, limit, offset):
-SELECT transaction_id, date, amount, external_iban, type
+SELECT t.transaction_id, t.date, t.amount, t.external_iban, t.type
 FROM Transaction_Table t, Category_Table c, Transaction_Category tc
 WHERE t.transaction_id = tc.transaction_id
 AND tc.category_id = c.category_id

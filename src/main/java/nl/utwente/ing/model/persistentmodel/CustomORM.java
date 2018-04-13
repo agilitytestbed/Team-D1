@@ -67,7 +67,7 @@ public class CustomORM {
                     "LIMIT ?\n" +
                     "OFFSET ?;";
     private static final String GET_TRANSACTIONS_BY_CATEGORY =
-            "SELECT transaction_id, date, amount, external_iban, type\n" +
+            "SELECT t.transaction_id, t.date, t.amount, t.external_iban, t.type\n" +
                     "FROM Transaction_Table t, Category_Table c, Transaction_Category tc\n" +
                     "WHERE t.transaction_id = tc.transaction_id\n" +
                     "AND tc.category_id = c.category_id\n" +
