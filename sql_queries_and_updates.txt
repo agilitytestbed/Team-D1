@@ -104,6 +104,46 @@ WHERE user_id = ?
 LIMIT ?
 OFFSET ?;
 
+
+
+	increaseHighestCategoryRuleID(user_id):
+UPDATE User_Table
+SET highest_category_rule_id = highest_category_rule_id + 1
+WHERE user_id = ?;
+
+	getHighestCategoryRuleID(user_id):
+SELECT highest_category_rule_id
+FROM User_Table
+WHERE user_id = ?;
+
+	createCategoryRule(user_id, category_rule_id, description, external_iban, type, category_id, apply_on_history):
+INSERT INTO Category_Rule (user_id, category_rule_id, description, external_iban, type, category_id, apply_on_history)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+	getCategoryRule(user_id, category_rule_id):
+SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history
+FROM Category_Rule
+WHERE user_id = ?
+AND category_rule_id = ?;
+
+	updateCategoryRule(description, external_iban, type, category_id, user_id, category_rule_id):
+UPDATE Category_Rule
+SET description = ?, external_iban = ?, type = ?, category_id = ?
+WHERE user_id = ?
+AND category_id = ?;
+
+	deleteCategoryRule(user_id, category_rule_id):
+DELETE FROM Category_Rule
+WHERE user_id = ?
+AND category_id = ?;
+
+	getCategoryRules(user_id):
+SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history
+FROM Category_Rule
+WHERE user_id = ?;
+
+
+
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
 VALUES (?, ?, ?);

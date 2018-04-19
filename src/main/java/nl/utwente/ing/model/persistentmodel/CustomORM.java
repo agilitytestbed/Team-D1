@@ -108,6 +108,36 @@ public class CustomORM {
                     "WHERE user_id = ?\n" +
                     "LIMIT ?\n" +
                     "OFFSET ?;";
+    private static final String INCREASE_HIGHEST_CATEGORY_RULE_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_category_rule_id = highest_category_rule_id + 1\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_HIGHEST_CATEGORY_RULE_ID =
+            "SELECT highest_category_rule_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    private static final String CREATE_CATEGORY_RULE =
+            "INSERT INTO Category_Rule (user_id, category_rule_id, description, " +
+                    "external_iban, type, category_id, apply_on_history)\n" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?);";
+    private static final String GET_CATEGORY_RULE =
+            "SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history\n" +
+                    "FROM Category_Rule\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_rule_id = ?;";
+    private static final String UPDATE_CATEGORY_RULE =
+            "UPDATE Category_Rule\n" +
+                    "SET description = ?, external_iban = ?, type = ?, category_id = ?\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_id = ?;";
+    private static final String DELETE_CATEGORY_RULE =
+            "DELETE FROM Category_Rule\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_id = ?;";
+    private static final String GET_CATEGORY_RULES =
+            "SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history\n" +
+                    "FROM Category_Rule\n" +
+                    "WHERE user_id = ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
