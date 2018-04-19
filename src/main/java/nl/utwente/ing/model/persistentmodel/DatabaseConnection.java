@@ -51,7 +51,8 @@ public class DatabaseConnection {
                             "  user_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                             "  session_id TEXT,\n" +
                             "  highest_transaction_id BIGINT,\n" +
-                            "  highest_category_id BIGINT\n" +
+                            "  highest_category_id BIGINT,\n" +
+                            "  highest_category_rule_id BIGINT\n" +
                             ");"
             );
             statement.executeUpdate(
@@ -84,6 +85,20 @@ public class DatabaseConnection {
                             "  FOREIGN KEY(transaction_id) REFERENCES Transaction_Table(transaction_id),\n" +
                             "  FOREIGN KEY(category_id) REFERENCES Category_Table(category_id),\n" +
                             "  PRIMARY KEY(user_id, transaction_id, category_id)\n" +
+                            ");"
+            );
+            statement.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS Category_Rule(\n" +
+                            "  user_id INTEGER,\n" +
+                            "  category_rule_id BIGINT,\n" +
+                            "  description TEXT,\n" +
+                            "  external_iban TEXT,\n" +
+                            "  type TEXT,\n" +
+                            "  category_id BIGINT,\n" +
+                            "  apply_on_history BOOLEAN,\n" +
+                            "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                            "  FOREIGN KEY(category_id) REFERENCES Category_Table(category_id),\n" +
+                            "  PRIMARY KEY(user_id, category_rule_id)\n" +
                             ");"
             );
             statement.close();
