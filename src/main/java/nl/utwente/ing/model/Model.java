@@ -3,6 +3,7 @@ package nl.utwente.ing.model;
 import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
 import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.CategoryRule;
 import nl.utwente.ing.model.bean.Session;
 import nl.utwente.ing.model.bean.Transaction;
 
@@ -16,6 +17,13 @@ import java.util.ArrayList;
  * @author Daan Kooij
  */
 public interface Model {
+
+    /**
+     * Method used to create and retrieve a new Session.
+     *
+     * @return A new Session.
+     */
+    Session getSession();
 
     /**
      * Method used to retrieve the transactions belonging to a certain user.
@@ -141,11 +149,51 @@ public interface Model {
      */
     void deleteCategory(String sessionID, long categoryID) throws InvalidSessionIDException, ResourceNotFoundException;
 
+
     /**
-     * Method used to create and retrieve a new Session.
+     * Method used to retrieve the CategoryRules belonging to a certain user.
      *
-     * @return A new Session.
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of CategoryRules belonging to the user with sessionID.
      */
-    Session getSession();
+    ArrayList<CategoryRule> getCategoryRules(String sessionID) throws InvalidSessionIDException;
+
+    /**
+     * Method used to create a new CategoryRule for a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param categoryRule The CategoryRule object to be used to create the new CategoryRule.
+     * @return The CategoryRule created by this method.
+     */
+    CategoryRule postCategoryRule(String sessionID, CategoryRule categoryRule) throws InvalidSessionIDException;
+
+    /**
+     * Method used to retrieve a certain CategoryRule of a certain user.
+     *
+     * @param sessionID      The sessionID of the user.
+     * @param categoryRuleID The categoryRuleID of the CategoryRule that will be retrieved.
+     * @return The CategoryRule with categoryRuleID belonging to the user with sessionID.
+     */
+    CategoryRule getCategoryRule(String sessionID, long categoryRuleID)
+            throws InvalidSessionIDException, ResourceNotFoundException;
+
+    /**
+     * Method used to update a certain CategoryRule of a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param categoryRule The CategoryRule object that will be used to update the CategoryRule with ID of this object.
+     * @return The CategoryRule updated by this method.
+     */
+    CategoryRule putCategoryRule(String sessionID, CategoryRule categoryRule)
+            throws InvalidSessionIDException, ResourceNotFoundException;
+
+    /**
+     * Method used to remove a certain CategoryRule of a certain user.
+     *
+     * @param sessionID      The sessionID of the user.
+     * @param categoryRuleID The categoryRuleID of the CategoryRule that will be deleted.
+     */
+    void deleteCategoryRule(String sessionID, long categoryRuleID)
+            throws InvalidSessionIDException, ResourceNotFoundException;
 
 }
