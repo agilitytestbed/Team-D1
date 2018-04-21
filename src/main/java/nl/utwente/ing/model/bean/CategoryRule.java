@@ -20,7 +20,8 @@ public class CategoryRule {
      * Used by the Spring framework.
      */
     public CategoryRule() {
-
+        this.category_id = 0;
+        this.applyOnHistory = false;
     }
 
     /**
@@ -80,20 +81,20 @@ public class CategoryRule {
     }
 
     /**
-     * Method used to retrieve the externalIBAN of CategoryRule.
+     * Method used to retrieve the iBAN of CategoryRule.
      *
-     * @return The externalIBAN of CategoryRule.
+     * @return The iBAN of CategoryRule.
      */
-    public String getExternalIBAN() {
+    public String getiBAN() {
         return iBAN;
     }
 
     /**
-     * Method used to update the externalIBAN of CategoryRule.
+     * Method used to update the iBAN of CategoryRule.
      *
-     * @param iBAN The new externalIBAN of CategoryRule.
+     * @param iBAN The new iBAN of CategoryRule.
      */
-    public void setExternalIBAN(String iBAN) {
+    public void setiBAN(String iBAN) {
         this.iBAN = iBAN;
     }
 
@@ -116,20 +117,20 @@ public class CategoryRule {
     }
 
     /**
-     * Method used to retrieve the categoryID of CategoryRule.
+     * Method used to retrieve the category_id of CategoryRule.
      *
-     * @return The categoryID of CategoryRule.
+     * @return The category_id of CategoryRule.
      */
-    public long getCategoryID() {
+    public long getCategory_id() {
         return category_id;
     }
 
     /**
-     * Method used to update the categoryID of CategoryRule.
+     * Method used to update the category_id of CategoryRule.
      *
-     * @param category_id The new categoryID of CategoryRule.
+     * @param category_id The new category_id of CategoryRule.
      */
-    public void setCategoryID(long category_id) {
+    public void setCategory_id(long category_id) {
         this.category_id = category_id;
     }
 

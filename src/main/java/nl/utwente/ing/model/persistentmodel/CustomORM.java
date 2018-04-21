@@ -135,11 +135,11 @@ public class CustomORM {
             "UPDATE Category_Rule\n" +
                     "SET description = ?, external_iban = ?, type = ?, category_id = ?\n" +
                     "WHERE user_id = ?\n" +
-                    "AND category_id = ?;";
+                    "AND category_rule_id = ?;";
     private static final String DELETE_CATEGORY_RULE =
             "DELETE FROM Category_Rule\n" +
                     "WHERE user_id = ?\n" +
-                    "AND category_id = ?;";
+                    "AND category_rule_id = ?;";
     private static final String GET_CATEGORY_RULES =
             "SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history\n" +
                     "FROM Category_Rule\n" +
@@ -638,9 +638,9 @@ public class CustomORM {
             statement.setInt(1, userID);
             statement.setLong(2, categoryRule.getId());
             statement.setString(3, categoryRule.getDescription());
-            statement.setString(4, categoryRule.getExternalIBAN());
+            statement.setString(4, categoryRule.getiBAN());
             statement.setString(5, categoryRule.getType());
-            statement.setLong(6, categoryRule.getCategoryID());
+            statement.setLong(6, categoryRule.getCategory_id());
             statement.setBoolean(7, categoryRule.getApplyOnHistory());
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -686,9 +686,9 @@ public class CustomORM {
         try {
             PreparedStatement statement = connection.prepareStatement(UPDATE_CATEGORY_RULE);
             statement.setString(1, categoryRule.getDescription());
-            statement.setString(2, categoryRule.getExternalIBAN());
+            statement.setString(2, categoryRule.getiBAN());
             statement.setString(3, categoryRule.getType());
-            statement.setLong(4, categoryRule.getCategoryID());
+            statement.setLong(4, categoryRule.getCategory_id());
             statement.setInt(5, userID);
             statement.setLong(6, categoryRule.getId());
             statement.executeUpdate();

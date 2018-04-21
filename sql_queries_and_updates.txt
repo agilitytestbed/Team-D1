@@ -136,12 +136,12 @@ AND category_rule_id = ?;
 UPDATE Category_Rule
 SET description = ?, external_iban = ?, type = ?, category_id = ?
 WHERE user_id = ?
-AND category_id = ?;
+AND category_rule_id = ?;
 
 	deleteCategoryRule(user_id, category_rule_id):
 DELETE FROM Category_Rule
 WHERE user_id = ?
-AND category_id = ?;
+AND category_rule_id = ?;
 
 	getCategoryRules(user_id):
 SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history
