@@ -148,6 +148,14 @@ SELECT category_rule_id, description, external_iban, type, category_id, apply_on
 FROM Category_Rule
 WHERE user_id = ?;
 
+    getMatchingTransactionIDs(user_id, description, external_iban, type):
+SELECT transaction_id
+FROM Transaction_Table
+WHERE user_id = ?
+AND description LIKE ?
+AND external_iban LIKE ?
+AND type LIKE ?;
+
 
 
 	linkTransactionToCategory(user_id, transaction_id, category_id):

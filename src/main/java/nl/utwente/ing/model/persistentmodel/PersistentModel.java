@@ -8,6 +8,7 @@ import nl.utwente.ing.model.bean.CategoryRule;
 import nl.utwente.ing.model.bean.Session;
 import nl.utwente.ing.model.bean.Transaction;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -105,10 +106,25 @@ public class PersistentModel implements Model {
             connection.commit();
             connection.setAutoCommit(true);
             customORM.createTransaction(userID, transactionID, date, amount, description, externalIBAN, type);
+            transaction = customORM.getTransaction(userID, transactionID);
             if (categoryID != 0) {
                 this.assignCategoryToTransaction(sessionID, transactionID, categoryID);
+            } else {
+                // Check if there is a CategoryRule that applies to this Transaction
+                ArrayList<CategoryRule> categoryRules = customORM.getCategoryRules(userID);
+
+                boolean found = false;
+                for (int i = 0; i < categoryRules.size() && !found; i++) {
+                    CategoryRule categoryRule = categoryRules.get(i);
+                    if (transaction.getDescription().contains(categoryRule.getDescription()) &&
+                            transaction.getExternalIBAN().contains(categoryRule.getiBAN()) &&
+                            transaction.getType().contains(categoryRule.getType()) &&
+                            customORM.getCategory(userID, categoryRule.getCategory_id()) != null) {
+                        customORM.linkTransactionToCategory(userID, transactionID, categoryRule.getCategory_id());
+                        found = true;
+                    }
+                }
             }
-            transaction = customORM.getTransaction(userID, transactionID);
             this.populateCategory(userID, transaction);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -354,6 +370,21 @@ public class PersistentModel implements Model {
             categoryRule.setId(categoryRuleID);
             customORM.createCategoryRule(userID, categoryRule);
             createdCategoryRule = customORM.getCategoryRule(userID, categoryRule.getId());
+
+            // If applyOnHistory is true and the Category exists, assign Category to all matching Transactions.
+            if (createdCategoryRule != null) {
+                long categoryID = createdCategoryRule.getCategory_id();
+
+                if (createdCategoryRule.getApplyOnHistory() && customORM.getCategory(userID, categoryID) != null) {
+                    ArrayList<Long> matchingTransactionIDs =
+                            customORM.getMatchingTransactionIDs(userID, createdCategoryRule);
+                    for (Long transactionID : matchingTransactionIDs) {
+                        customORM.unlinkTransactionFromAllCategories(userID, transactionID);
+                        customORM.linkTransactionToCategory(userID, transactionID, categoryID);
+                    }
+                }
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -451,7 +451,7 @@ public class MainRestController {
                 cr.getCategory_id() <= 0) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
-        if (!cr.getType().equals("deposit") && !cr.getType().equals("withdrawal")) {
+        if (!cr.getType().equals("") && !cr.getType().equals("deposit") && !cr.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
         try {
@@ -509,7 +509,7 @@ public class MainRestController {
                 cr.getCategory_id() <= 0) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
-        if (!cr.getType().equals("deposit") && !cr.getType().equals("withdrawal")) {
+        if (!cr.getType().equals("") && !cr.getType().equals("deposit") && !cr.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
         try {

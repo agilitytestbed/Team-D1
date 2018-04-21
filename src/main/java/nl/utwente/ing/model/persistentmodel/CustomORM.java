@@ -144,6 +144,13 @@ public class CustomORM {
             "SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history\n" +
                     "FROM Category_Rule\n" +
                     "WHERE user_id = ?;";
+    private static final String GET_MATCHING_TRANSACTION_IDS =
+            "SELECT transaction_id\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND description LIKE ?\n" +
+                    "AND external_iban LIKE ?\n" +
+                    "AND type LIKE ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -726,8 +733,8 @@ public class CustomORM {
             PreparedStatement statement = connection.prepareStatement(GET_CATEGORY_RULES);
             statement.setInt(1, userID);
             ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
 
+            while (resultSet.next()) {
                 long categoryRuleID = resultSet.getLong(1);
                 String description = resultSet.getString(2);
                 String externalIBAN = resultSet.getString(3);
@@ -741,6 +748,35 @@ public class CustomORM {
             e.printStackTrace();
         }
         return categoryRules;
+    }
+
+    /**
+     * Method used to retrieve the IDs of all Transactions belonging to the user with userID that match categoryRule.
+     *
+     * @param userID       The ID of the user whose transactionIDs of the Transactions
+     *                     that match categoryRule will be retrieved.
+     * @param categoryRule The CategoryRule to which Transactions of the user with userID will be tested
+     *                     to check whether they match categoryRule.
+     * @return An ArrayList consisting of the transactionIDs of the Transactions belonging to the user with userID
+     * that match categoryRule.
+     */
+    public ArrayList<Long> getMatchingTransactionIDs(int userID, CategoryRule categoryRule) {
+        ArrayList<Long> matchingTransactionIDs = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_MATCHING_TRANSACTION_IDS);
+            statement.setInt(1, userID);
+            statement.setString(2, "%" + categoryRule.getDescription() + "%");
+            statement.setString(3, "%" + categoryRule.getiBAN() + "%");
+            statement.setString(4, "%" + categoryRule.getType() + "%");
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                matchingTransactionIDs.add(resultSet.getLong(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return matchingTransactionIDs;
     }
 
     /**
