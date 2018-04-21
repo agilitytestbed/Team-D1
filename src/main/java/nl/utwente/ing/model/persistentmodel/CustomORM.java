@@ -1,6 +1,7 @@
 package nl.utwente.ing.model.persistentmodel;
 
 import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.CategoryRule;
 import nl.utwente.ing.model.bean.Transaction;
 
 import java.sql.Connection;
@@ -167,8 +168,8 @@ public class CustomORM {
                     "AND t.user_id = ?\n" +
                     "AND t.transaction_id = ?;";
     private static final String CREATE_NEW_USER =
-            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id)\n" +
-                    "VALUES (?, 0, 0);";
+            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id)\n" +
+                    "VALUES (?, 0, 0, 0);";
     private static final String GET_USER_ID =
             "SELECT user_id\n" +
                     "FROM User_Table\n" +
@@ -225,6 +226,7 @@ public class CustomORM {
      * @param transactionID The transactionID of the to be inserted Transaction.
      * @param date          The date of the to be inserted Transaction.
      * @param amount        The amount of the to be inserted Transaction.
+     * @param description   The description of the to be inserted Transaction.
      * @param externalIBAN  The externalIBAN of the to be inserted Transaction.
      * @param type          The type of the to be inserted Transaction.
      */
@@ -580,7 +582,7 @@ public class CustomORM {
             statement.setInt(3, offset);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                int categoryID = resultSet.getInt(1);
+                long categoryID = resultSet.getLong(1);
                 String name = resultSet.getString(2);
                 categories.add(new Category(categoryID, name));
             }
@@ -588,6 +590,168 @@ public class CustomORM {
             e.printStackTrace();
         }
         return categories;
+    }
+
+    /**
+     * Method used to increase the highestCategoryRuleID field of a certain user by one in the database.
+     *
+     * @param userID The id of the user whose highestCategoryRuleID field should be increased.
+     */
+    public void increaseHighestCategoryRuleID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_CATEGORY_RULE_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestCategoryRuleID field of a certain user from the database.
+     *
+     * @param userID The id of the user whose highestCategoryRuleID field should be retrieved.
+     * @return The value of the highestCategoryRuleID field of the user with userID.
+     */
+    public long getHighestCategoryRuleID(int userID) {
+        long highestTransactionID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_CATEGORY_RULE_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestTransactionID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestTransactionID;
+    }
+
+    /**
+     * Method used to insert a CategoryRule into the database.
+     *
+     * @param userID         The id of the user to which this new CategoryRule will belong.
+     * @param categoryRuleID The categoryRuleID of the to be inserted CategoryRule.
+     * @param description    The description of the to be inserted CategoryRule.
+     * @param externalIBAN   The externalIBAN of the to be inserted CategoryRule.
+     * @param type           The type of the to be inserted CategoryRule.
+     * @param categoryID     The categoryID of the to be inserted CategoryRule.
+     * @param applyOnHistory The boolean indicating whether this CategoryRule should be applied on previous Transactions.
+     */
+    public void createCategoryRule(int userID, long categoryRuleID, String description, String externalIBAN,
+                                   String type, long categoryID, boolean applyOnHistory) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_CATEGORY_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryRuleID);
+            statement.setString(3, description);
+            statement.setString(4, externalIBAN);
+            statement.setString(5, type);
+            statement.setLong(6, categoryID);
+            statement.setBoolean(7, applyOnHistory);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a CategoryRule from the database.
+     *
+     * @param userID         The id of the user from which a CategoryRule should be retrieved.
+     * @param categoryRuleID The id of the to be retrieved CategoryRule.
+     * @return A CategoryRule object containing data retrieved from the database.
+     */
+    public CategoryRule getCategoryRule(int userID, long categoryRuleID) {
+        CategoryRule categoryRule = null;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_CATEGORY_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryRuleID);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String description = resultSet.getString(2);
+                String externalIBAN = resultSet.getString(3);
+                String type = resultSet.getString(4);
+                long categoryID = resultSet.getLong(5);
+                boolean applyOnHistory = resultSet.getBoolean(6);
+                categoryRule = new CategoryRule(categoryRuleID, description, externalIBAN, type, categoryID, applyOnHistory);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categoryRule;
+    }
+
+    /**
+     * Method used to update a CategoryRule in the database.
+     *
+     * @param description    The new description of the CategoryRule.
+     * @param externalIBAN   The new externalIBAN of the CategoryRule.
+     * @param type           The new type of the CategoryRule.
+     * @param categoryID     The new categoryID of the CategoryRule.
+     * @param userID         The id of the user whose CategoryRule with categoryRuleID will be updated.
+     * @param categoryRuleID The id of the to be updated CategoryRule.
+     */
+    public void updateCategoryRule(String description, String externalIBAN, String type, long categoryID,
+                                   int userID, long categoryRuleID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(UPDATE_CATEGORY_RULE);
+            statement.setString(1, description);
+            statement.setString(2, externalIBAN);
+            statement.setString(3, type);
+            statement.setLong(4, categoryID);
+            statement.setInt(5, userID);
+            statement.setLong(6, categoryRuleID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to delete a CategoryRule from the database.
+     *
+     * @param userID         The id of the user whose CategoryRule with categoryRuleID will be deleted.
+     * @param categoryRuleID The id of the to be deleted CategoryRule.
+     */
+    public void deleteCategoryRule(int userID, long categoryRuleID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(DELETE_CATEGORY_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryRuleID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a batch of CategoryRule objects belonging to a certain user from the database.
+     *
+     * @param userID The id of the user to who the to be retrieved CategoryRule objects belong.
+     * @return An ArrayList of Category objects.
+     */
+    public ArrayList<CategoryRule> getCategoryRules(int userID) {
+        ArrayList<CategoryRule> categoryRules = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_CATEGORY_RULES);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+
+                long categoryRuleID = resultSet.getLong(1);
+                String description = resultSet.getString(2);
+                String externalIBAN = resultSet.getString(3);
+                String type = resultSet.getString(4);
+                long categoryID = resultSet.getLong(5);
+                boolean applyOnHistory = resultSet.getBoolean(6);
+                categoryRules.add(new CategoryRule(categoryRuleID, description, externalIBAN, type,
+                        categoryID, applyOnHistory));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categoryRules;
     }
 
     /**
