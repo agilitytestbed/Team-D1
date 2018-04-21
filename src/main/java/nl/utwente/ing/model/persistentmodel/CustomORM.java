@@ -629,25 +629,19 @@ public class CustomORM {
     /**
      * Method used to insert a CategoryRule into the database.
      *
-     * @param userID         The id of the user to which this new CategoryRule will belong.
-     * @param categoryRuleID The categoryRuleID of the to be inserted CategoryRule.
-     * @param description    The description of the to be inserted CategoryRule.
-     * @param externalIBAN   The externalIBAN of the to be inserted CategoryRule.
-     * @param type           The type of the to be inserted CategoryRule.
-     * @param categoryID     The categoryID of the to be inserted CategoryRule.
-     * @param applyOnHistory The boolean indicating whether this CategoryRule should be applied on previous Transactions.
+     * @param userID       The id of the user to which this new CategoryRule will belong.
+     * @param categoryRule The CategoryRule object to be inserted into the database.
      */
-    public void createCategoryRule(int userID, long categoryRuleID, String description, String externalIBAN,
-                                   String type, long categoryID, boolean applyOnHistory) {
+    public void createCategoryRule(int userID, CategoryRule categoryRule) {
         try {
             PreparedStatement statement = connection.prepareStatement(CREATE_CATEGORY_RULE);
             statement.setInt(1, userID);
-            statement.setLong(2, categoryRuleID);
-            statement.setString(3, description);
-            statement.setString(4, externalIBAN);
-            statement.setString(5, type);
-            statement.setLong(6, categoryID);
-            statement.setBoolean(7, applyOnHistory);
+            statement.setLong(2, categoryRule.getId());
+            statement.setString(3, categoryRule.getDescription());
+            statement.setString(4, categoryRule.getExternalIBAN());
+            statement.setString(5, categoryRule.getType());
+            statement.setLong(6, categoryRule.getCategoryID());
+            statement.setBoolean(7, categoryRule.getApplyOnHistory());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -685,23 +679,18 @@ public class CustomORM {
     /**
      * Method used to update a CategoryRule in the database.
      *
-     * @param description    The new description of the CategoryRule.
-     * @param externalIBAN   The new externalIBAN of the CategoryRule.
-     * @param type           The new type of the CategoryRule.
-     * @param categoryID     The new categoryID of the CategoryRule.
-     * @param userID         The id of the user whose CategoryRule with categoryRuleID will be updated.
-     * @param categoryRuleID The id of the to be updated CategoryRule.
+     * @param userID       The id of the user whose CategoryRule with categoryRuleID will be updated.
+     * @param categoryRule The CategoryRule object to be updated in the database.
      */
-    public void updateCategoryRule(String description, String externalIBAN, String type, long categoryID,
-                                   int userID, long categoryRuleID) {
+    public void updateCategoryRule(int userID, CategoryRule categoryRule) {
         try {
             PreparedStatement statement = connection.prepareStatement(UPDATE_CATEGORY_RULE);
-            statement.setString(1, description);
-            statement.setString(2, externalIBAN);
-            statement.setString(3, type);
-            statement.setLong(4, categoryID);
+            statement.setString(1, categoryRule.getDescription());
+            statement.setString(2, categoryRule.getExternalIBAN());
+            statement.setString(3, categoryRule.getType());
+            statement.setLong(4, categoryRule.getCategoryID());
             statement.setInt(5, userID);
-            statement.setLong(6, categoryRuleID);
+            statement.setLong(6, categoryRule.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

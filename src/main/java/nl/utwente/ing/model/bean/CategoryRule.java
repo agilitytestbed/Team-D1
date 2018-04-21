@@ -138,7 +138,7 @@ public class CategoryRule {
      *
      * @return The boolean indicating whether this CategoryRule is applied on previous Transactions.
      */
-    public boolean isApplyOnHistory() {
+    public boolean getApplyOnHistory() {
         return applyOnHistory;
     }
 

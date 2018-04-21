@@ -4,6 +4,7 @@ import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
 import nl.utwente.ing.model.Model;
 import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.CategoryRule;
 import nl.utwente.ing.model.bean.Session;
 import nl.utwente.ing.model.bean.Transaction;
 
@@ -31,6 +32,28 @@ public class PersistentModel implements Model {
     public PersistentModel() {
         this.connection = DatabaseConnection.getDatabaseConnection();
         this.customORM = new CustomORM(connection);
+    }
+
+    /**
+     * Method used to create and retrieve a new Session.
+     *
+     * @return A new Session.
+     */
+    public Session getSession() {
+        /*
+        In an exceptionally rare case, it can happen that there will be two users with the same sessionID.
+        This only happens when two sessionIDs are generated at exactly the same time and they are the same.
+         */
+        String sessionID = "";
+        boolean unique = false;
+        while (!unique) {
+            sessionID = UUID.randomUUID().toString();
+            if (customORM.getUserID(sessionID) == -1) {
+                unique = true;
+            }
+        }
+        customORM.createNewUser(sessionID);
+        return new Session(sessionID);
     }
 
     /**
@@ -302,25 +325,94 @@ public class PersistentModel implements Model {
     }
 
     /**
-     * Method used to create and retrieve a new Session.
+     * Method used to retrieve the CategoryRules belonging to a certain user.
      *
-     * @return A new Session.
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of CategoryRules belonging to the user with sessionID.
      */
-    public Session getSession() {
-        /*
-        In an exceptionally rare case, it can happen that there will be two users with the same sessionID.
-        This only happens when two sessionIDs are generated at exactly the same time and they are the same.
-         */
-        String sessionID = "";
-        boolean unique = false;
-        while (!unique) {
-            sessionID = UUID.randomUUID().toString();
-            if (customORM.getUserID(sessionID) == -1) {
-                unique = true;
-            }
+    public ArrayList<CategoryRule> getCategoryRules(String sessionID) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        return customORM.getCategoryRules(userID);
+    }
+
+    /**
+     * Method used to create a new CategoryRule for a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param categoryRule The CategoryRule object to be used to create the new CategoryRule.
+     * @return The CategoryRule created by this method.
+     */
+    public CategoryRule postCategoryRule(String sessionID, CategoryRule categoryRule) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        CategoryRule createdCategoryRule = null;
+        try {
+            connection.setAutoCommit(false);
+            customORM.increaseHighestCategoryRuleID(userID);
+            long categoryRuleID = customORM.getHighestCategoryRuleID(userID);
+            connection.commit();
+            connection.setAutoCommit(true);
+            categoryRule.setId(categoryRuleID);
+            customORM.createCategoryRule(userID, categoryRule);
+            createdCategoryRule = customORM.getCategoryRule(userID, categoryRule.getId());
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        customORM.createNewUser(sessionID);
-        return new Session(sessionID);
+        return createdCategoryRule;
+    }
+
+    /**
+     * Method used to retrieve a certain CategoryRule of a certain user.
+     *
+     * @param sessionID      The sessionID of the user.
+     * @param categoryRuleID The categoryRuleID of the CategoryRule that will be retrieved.
+     * @return The CategoryRule with categoryRuleID belonging to the user with sessionID.
+     */
+    public CategoryRule getCategoryRule(String sessionID, long categoryRuleID)
+            throws InvalidSessionIDException, ResourceNotFoundException {
+        int userID = this.getUserID(sessionID);
+        CategoryRule categoryRule = customORM.getCategoryRule(userID, categoryRuleID);
+        if (categoryRule != null) {
+            return categoryRule;
+        } else {
+            throw new ResourceNotFoundException();
+        }
+    }
+
+    /**
+     * Method used to update a certain CategoryRule of a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param categoryRule The CategoryRule object that will be used to update the CategoryRule with ID of this object.
+     * @return The CategoryRule updated by this method.
+     */
+    public CategoryRule putCategoryRule(String sessionID, CategoryRule categoryRule)
+            throws InvalidSessionIDException, ResourceNotFoundException {
+        int userID = this.getUserID(sessionID);
+        CategoryRule updatedCategoryRule = customORM.getCategoryRule(userID, categoryRule.getId()); // Not updated here
+        if (updatedCategoryRule != null) {
+            customORM.updateCategoryRule(userID, categoryRule);
+            updatedCategoryRule = customORM.getCategoryRule(userID, categoryRule.getId());
+        } else {
+            throw new ResourceNotFoundException();
+        }
+        return updatedCategoryRule;
+    }
+
+    /**
+     * Method used to remove a certain CategoryRule of a certain user.
+     *
+     * @param sessionID      The sessionID of the user.
+     * @param categoryRuleID The categoryRuleID of the CategoryRule that will be deleted.
+     */
+    public void deleteCategoryRule(String sessionID, long categoryRuleID)
+            throws InvalidSessionIDException, ResourceNotFoundException {
+        int userID = this.getUserID(sessionID);
+        CategoryRule categoryRule = customORM.getCategoryRule(userID, categoryRuleID);
+        if (categoryRule != null) {
+            customORM.deleteCategoryRule(userID, categoryRuleID);
+        } else {
+            throw new ResourceNotFoundException();
+        }
     }
 
     /**
