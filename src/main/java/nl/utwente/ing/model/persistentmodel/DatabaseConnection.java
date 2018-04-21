@@ -61,6 +61,7 @@ public class DatabaseConnection {
                             "  transaction_id BIGINT,\n" +
                             "  date DATETIME,\n" +
                             "  amount FLOAT,\n" +
+                            "  description TEXT,\n" +
                             "  external_iban TEXT,\n" +
                             "  type TEXT,\n" +
                             "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +

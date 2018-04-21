@@ -35,14 +35,15 @@ public interface Model {
      * @param sessionID    The sessionID of the user.
      * @param date         The date of the to be created Transaction.
      * @param amount       The amount of the to be created Transaction.
+     * @param description  The description of the to be created Transaction.
      * @param externalIBAN The external IBAN of the to be created Transaction.
      * @param type         The type of the to be created Transaction.
      * @param categoryID   The categoryID of the Category that will be assigned to the to be created Transaction
      *                     (0 if no Category).
      * @return The Transaction created by this method.
      */
-    Transaction postTransaction(String sessionID, String date, float amount, String externalIBAN, String type,
-                                long categoryID) throws InvalidSessionIDException, ResourceNotFoundException;
+    Transaction postTransaction(String sessionID, String date, float amount, String description, String externalIBAN,
+                                String type, long categoryID) throws InvalidSessionIDException, ResourceNotFoundException;
 
     /**
      * Method used to retrieve a certain Transaction of a certain user.
@@ -61,14 +62,15 @@ public interface Model {
      * @param transactionID The transactionID of the Transaction that will be updated.
      * @param date          The new date of the to be updated Transaction.
      * @param amount        The new amount of the to be updated Transaction.
+     * @param description   The new description of the to be updated Transaction.
      * @param externalIBAN  The new external IBAN of the to be updated Transaction.
      * @param type          The new type of the to be updated Transaction.
      * @param categoryID    The new categoryID of the Category that will be assigned to the to be updated Transaction
      *                      (0 if no Category).
      * @return The Transaction updated by this method.
      */
-    Transaction putTransaction(String sessionID, long transactionID, String date, float amount, String externalIBAN,
-                               String type, long categoryID)
+    Transaction putTransaction(String sessionID, long transactionID, String date, float amount, String description,
+                               String externalIBAN, String type, long categoryID)
             throws InvalidSessionIDException, ResourceNotFoundException;
 
     /**

@@ -63,14 +63,15 @@ public class PersistentModel implements Model {
      * @param sessionID    The sessionID of the user.
      * @param date         The date of the to be created Transaction.
      * @param amount       The amount of the to be created Transaction.
+     * @param description  The description of the to be created Transaction.
      * @param externalIBAN The external IBAN of the to be created Transaction.
      * @param type         The type of the to be created Transaction.
      * @param categoryID   The categoryID of the Category that will be assigned to the to be created Transaction
      *                     (0 if no Category).
      * @return The Transaction created by this method.
      */
-    public Transaction postTransaction(String sessionID, String date, float amount, String externalIBAN, String type,
-                                       long categoryID)
+    public Transaction postTransaction(String sessionID, String date, float amount, String description,
+                                       String externalIBAN, String type, long categoryID)
             throws InvalidSessionIDException, ResourceNotFoundException {
         int userID = this.getUserID(sessionID);
         Transaction transaction = null;
@@ -80,7 +81,7 @@ public class PersistentModel implements Model {
             long transactionID = customORM.getHighestTransactionID(userID);
             connection.commit();
             connection.setAutoCommit(true);
-            customORM.createTransaction(userID, transactionID, date, amount, externalIBAN, type);
+            customORM.createTransaction(userID, transactionID, date, amount, description, externalIBAN, type);
             if (categoryID != 0) {
                 this.assignCategoryToTransaction(sessionID, transactionID, categoryID);
             }
@@ -118,6 +119,7 @@ public class PersistentModel implements Model {
      * @param transactionID The transactionID of the Transaction that will be updated.
      * @param date          The new date of the to be updated Transaction.
      * @param amount        The new amount of the to be updated Transaction.
+     * @param description   The new description of the to be updated Transaction.
      * @param externalIBAN  The new external IBAN of the to be updated Transaction.
      * @param type          The new type of the to be updated Transaction.
      * @param categoryID    The new categoryID of the Category that will be assigned to the to be updated Transaction
@@ -125,7 +127,7 @@ public class PersistentModel implements Model {
      * @return The Transaction updated by this method.
      */
     public Transaction putTransaction(String sessionID, long transactionID, String date, float amount,
-                                      String externalIBAN, String type, long categoryID)
+                                      String description, String externalIBAN, String type, long categoryID)
             throws InvalidSessionIDException, ResourceNotFoundException {
         int userID = this.getUserID(sessionID);
         Transaction transaction = customORM.getTransaction(userID, transactionID);
@@ -135,6 +137,9 @@ public class PersistentModel implements Model {
             }
             if (amount != 0) {
                 customORM.updateTransactionAmount(amount, userID, transactionID);
+            }
+            if (description != null) {
+                customORM.updateTransactionDescription(description, userID, transactionID);
             }
             if (externalIBAN != null && !externalIBAN.equals("")) {
                 customORM.updateTransactionExternalIBAN(externalIBAN, userID, transactionID);

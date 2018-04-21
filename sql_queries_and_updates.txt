@@ -8,12 +8,12 @@ SELECT highest_transaction_id
 FROM User_Table
 WHERE user_id = ?;
 
-	createTransaction(user_id, transaction_id, date, amount, external_iban, type):
-INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, external_iban, type)
-VALUES (?, ?, ?, ?, ?, ?);
+	createTransaction(user_id, transaction_id, date, amount, description, external_iban, type):
+INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, description, external_iban, type)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 	getTransaction(user_id, transaction_id):
-SELECT transaction_id, date, amount, external_iban, type
+SELECT transaction_id, date, amount, description, external_iban, type
 FROM Transaction_Table
 WHERE user_id = ?
 AND transaction_id = ?;
@@ -27,6 +27,12 @@ AND transaction_id = ?;
 	updateTransactionAmount(amount, user_id, transaction_id):
 UPDATE Transaction_Table
 SET amount = ?
+WHERE user_id = ?
+AND transaction_id = ?;
+
+	updateTransactionDescription(description, user_id, transaction_id):
+UPDATE Transaction_Table
+SET description = ?
 WHERE user_id = ?
 AND transaction_id = ?;
 
@@ -48,14 +54,14 @@ WHERE user_id = ?
 AND transaction_id = ?;
 
 	getTransactions(user_id, limit, offset):
-SELECT transaction_id, date, amount, external_iban, type
+SELECT transaction_id, date, amount, description, external_iban, type
 FROM Transaction_Table
 WHERE user_id = ?
 LIMIT ?
 OFFSET ?;
 
 	getTransactionsByCategory(user_id, category, limit, offset):
-SELECT t.transaction_id, t.date, t.amount, t.external_iban, t.type
+SELECT t.transaction_id, t.date, t.amount, t.description, t.external_iban, t.type
 FROM Transaction_Table t, Category_Table c, Transaction_Category tc
 WHERE t.transaction_id = tc.transaction_id
 AND tc.category_id = c.category_id

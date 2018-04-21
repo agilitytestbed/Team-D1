@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS Transaction_Table(
   transaction_id BIGINT,
   date DATETIME,
   amount FLOAT,
+  description TEXT,
   external_iban TEXT,
   type TEXT,
   FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
