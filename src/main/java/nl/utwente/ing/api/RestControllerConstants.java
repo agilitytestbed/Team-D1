@@ -8,6 +8,6 @@ package nl.utwente.ing.api;
  */
 public class RestControllerConstants {
 
-    public static final String URI_PREFIX = "/api/v1";
+    public static final String URI_PREFIX = "/api/v2";
 
 }
