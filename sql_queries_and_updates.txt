@@ -8,12 +8,12 @@ SELECT highest_transaction_id
 FROM User_Table
 WHERE user_id = ?;
 
-	createTransaction(user_id, transaction_id, date, amount, external_iban, type):
-INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, external_iban, type)
-VALUES (?, ?, ?, ?, ?, ?);
+	createTransaction(user_id, transaction_id, date, amount, description, external_iban, type):
+INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, description, external_iban, type)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 	getTransaction(user_id, transaction_id):
-SELECT transaction_id, date, amount, external_iban, type
+SELECT transaction_id, date, amount, description, external_iban, type
 FROM Transaction_Table
 WHERE user_id = ?
 AND transaction_id = ?;
@@ -27,6 +27,12 @@ AND transaction_id = ?;
 	updateTransactionAmount(amount, user_id, transaction_id):
 UPDATE Transaction_Table
 SET amount = ?
+WHERE user_id = ?
+AND transaction_id = ?;
+
+	updateTransactionDescription(description, user_id, transaction_id):
+UPDATE Transaction_Table
+SET description = ?
 WHERE user_id = ?
 AND transaction_id = ?;
 
@@ -48,14 +54,14 @@ WHERE user_id = ?
 AND transaction_id = ?;
 
 	getTransactions(user_id, limit, offset):
-SELECT transaction_id, date, amount, external_iban, type
+SELECT transaction_id, date, amount, description, external_iban, type
 FROM Transaction_Table
 WHERE user_id = ?
 LIMIT ?
 OFFSET ?;
 
 	getTransactionsByCategory(user_id, category, limit, offset):
-SELECT t.transaction_id, t.date, t.amount, t.external_iban, t.type
+SELECT t.transaction_id, t.date, t.amount, t.description, t.external_iban, t.type
 FROM Transaction_Table t, Category_Table c, Transaction_Category tc
 WHERE t.transaction_id = tc.transaction_id
 AND tc.category_id = c.category_id
@@ -104,6 +110,54 @@ WHERE user_id = ?
 LIMIT ?
 OFFSET ?;
 
+
+
+	increaseHighestCategoryRuleID(user_id):
+UPDATE User_Table
+SET highest_category_rule_id = highest_category_rule_id + 1
+WHERE user_id = ?;
+
+	getHighestCategoryRuleID(user_id):
+SELECT highest_category_rule_id
+FROM User_Table
+WHERE user_id = ?;
+
+	createCategoryRule(user_id, category_rule_id, description, external_iban, type, category_id, apply_on_history):
+INSERT INTO Category_Rule (user_id, category_rule_id, description, external_iban, type, category_id, apply_on_history)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+	getCategoryRule(user_id, category_rule_id):
+SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history
+FROM Category_Rule
+WHERE user_id = ?
+AND category_rule_id = ?;
+
+	updateCategoryRule(description, external_iban, type, category_id, user_id, category_rule_id):
+UPDATE Category_Rule
+SET description = ?, external_iban = ?, type = ?, category_id = ?
+WHERE user_id = ?
+AND category_rule_id = ?;
+
+	deleteCategoryRule(user_id, category_rule_id):
+DELETE FROM Category_Rule
+WHERE user_id = ?
+AND category_rule_id = ?;
+
+	getCategoryRules(user_id):
+SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history
+FROM Category_Rule
+WHERE user_id = ?;
+
+    getMatchingTransactionIDs(user_id, description, external_iban, type):
+SELECT transaction_id
+FROM Transaction_Table
+WHERE user_id = ?
+AND description LIKE ?
+AND external_iban LIKE ?
+AND type LIKE ?;
+
+
+
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
 VALUES (?, ?, ?);
@@ -133,8 +187,8 @@ AND t.user_id = ?
 AND t.transaction_id = ?;
 
 	createNewUser(session_id):
-INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id)
-VALUES (?, 0, 0);
+INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id)
+VALUES (?, 0, 0, 0);
 
 	getUserID(session_id):
 SELECT user_id

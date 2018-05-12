@@ -1,6 +1,7 @@
 package nl.utwente.ing.model.persistentmodel;
 
 import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.CategoryRule;
 import nl.utwente.ing.model.bean.Transaction;
 
 import java.sql.Connection;
@@ -29,10 +30,10 @@ public class CustomORM {
                     "FROM User_Table\n" +
                     "WHERE user_id = ?;";
     private static final String CREATE_TRANSACTION =
-            "INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, external_iban, type)\n" +
-                    "VALUES (?, ?, ?, ?, ?, ?);";
+            "INSERT INTO Transaction_Table (user_id, transaction_id, date, amount, description, external_iban, type)\n" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?);";
     private static final String GET_TRANSACTION =
-            "SELECT transaction_id, date, amount, external_iban, type\n" +
+            "SELECT transaction_id, date, amount, description, external_iban, type\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "AND transaction_id = ?;";
@@ -44,6 +45,11 @@ public class CustomORM {
     private static final String UPDATE_TRANSACTION_AMOUNT =
             "UPDATE Transaction_Table\n" +
                     "SET amount = ?\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND transaction_id = ?;";
+    private static final String UPDATE_TRANSACTION_DESCRIPTION =
+            "UPDATE Transaction_Table\n" +
+                    "SET description = ?\n" +
                     "WHERE user_id = ?\n" +
                     "AND transaction_id = ?;";
     private static final String UPDATE_TRANSACTION_EXTERNAL_IBAN =
@@ -61,13 +67,13 @@ public class CustomORM {
                     "WHERE user_id = ?\n" +
                     "AND transaction_id = ?;\n";
     private static final String GET_TRANSACTIONS =
-            "SELECT transaction_id, date, amount, external_iban, type\n" +
+            "SELECT transaction_id, date, amount, description, external_iban, type\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "LIMIT ?\n" +
                     "OFFSET ?;";
     private static final String GET_TRANSACTIONS_BY_CATEGORY =
-            "SELECT t.transaction_id, t.date, t.amount, t.external_iban, t.type\n" +
+            "SELECT t.transaction_id, t.date, t.amount, t.description, t.external_iban, t.type\n" +
                     "FROM Transaction_Table t, Category_Table c, Transaction_Category tc\n" +
                     "WHERE t.transaction_id = tc.transaction_id\n" +
                     "AND tc.category_id = c.category_id\n" +
@@ -108,6 +114,43 @@ public class CustomORM {
                     "WHERE user_id = ?\n" +
                     "LIMIT ?\n" +
                     "OFFSET ?;";
+    private static final String INCREASE_HIGHEST_CATEGORY_RULE_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_category_rule_id = highest_category_rule_id + 1\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_HIGHEST_CATEGORY_RULE_ID =
+            "SELECT highest_category_rule_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    private static final String CREATE_CATEGORY_RULE =
+            "INSERT INTO Category_Rule (user_id, category_rule_id, description, " +
+                    "external_iban, type, category_id, apply_on_history)\n" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?);";
+    private static final String GET_CATEGORY_RULE =
+            "SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history\n" +
+                    "FROM Category_Rule\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_rule_id = ?;";
+    private static final String UPDATE_CATEGORY_RULE =
+            "UPDATE Category_Rule\n" +
+                    "SET description = ?, external_iban = ?, type = ?, category_id = ?\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_rule_id = ?;";
+    private static final String DELETE_CATEGORY_RULE =
+            "DELETE FROM Category_Rule\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND category_rule_id = ?;";
+    private static final String GET_CATEGORY_RULES =
+            "SELECT category_rule_id, description, external_iban, type, category_id, apply_on_history\n" +
+                    "FROM Category_Rule\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_MATCHING_TRANSACTION_IDS =
+            "SELECT transaction_id\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND description LIKE ?\n" +
+                    "AND external_iban LIKE ?\n" +
+                    "AND type LIKE ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -132,8 +175,8 @@ public class CustomORM {
                     "AND t.user_id = ?\n" +
                     "AND t.transaction_id = ?;";
     private static final String CREATE_NEW_USER =
-            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id)\n" +
-                    "VALUES (?, 0, 0);";
+            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id)\n" +
+                    "VALUES (?, 0, 0, 0);";
     private static final String GET_USER_ID =
             "SELECT user_id\n" +
                     "FROM User_Table\n" +
@@ -190,19 +233,21 @@ public class CustomORM {
      * @param transactionID The transactionID of the to be inserted Transaction.
      * @param date          The date of the to be inserted Transaction.
      * @param amount        The amount of the to be inserted Transaction.
+     * @param description   The description of the to be inserted Transaction.
      * @param externalIBAN  The externalIBAN of the to be inserted Transaction.
      * @param type          The type of the to be inserted Transaction.
      */
-    public void createTransaction(int userID, long transactionID, String date, float amount, String externalIBAN,
-                                  String type) {
+    public void createTransaction(int userID, long transactionID, String date, float amount, String description,
+                                  String externalIBAN, String type) {
         try {
             PreparedStatement statement = connection.prepareStatement(CREATE_TRANSACTION);
             statement.setInt(1, userID);
             statement.setLong(2, transactionID);
             statement.setString(3, date);
             statement.setFloat(4, amount);
-            statement.setString(5, externalIBAN);
-            statement.setString(6, type);
+            statement.setString(5, description);
+            statement.setString(6, externalIBAN);
+            statement.setString(7, type);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -226,9 +271,10 @@ public class CustomORM {
             if (resultSet.next()) {
                 String date = resultSet.getString(2);
                 float amount = resultSet.getFloat(3);
-                String externalIBAN = resultSet.getString(4);
-                String type = resultSet.getString(5);
-                transaction = new Transaction(transactionID, date, amount, externalIBAN, type);
+                String description = resultSet.getString(4);
+                String externalIBAN = resultSet.getString(5);
+                String type = resultSet.getString(6);
+                transaction = new Transaction(transactionID, date, amount, description, externalIBAN, type);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -266,6 +312,25 @@ public class CustomORM {
         try {
             PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSACTION_AMOUNT);
             statement.setFloat(1, amount);
+            statement.setInt(2, userID);
+            statement.setLong(3, transactionID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to change the description of a Transaction in the database.
+     *
+     * @param description   The new description of the Transaction.
+     * @param userID        The id of the user whose Transaction with transactionID will be updated.
+     * @param transactionID The id of the to be updated Transaction.
+     */
+    public void updateTransactionDescription(String description, int userID, long transactionID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSACTION_DESCRIPTION);
+            statement.setString(1, description);
             statement.setInt(2, userID);
             statement.setLong(3, transactionID);
             statement.executeUpdate();
@@ -349,9 +414,10 @@ public class CustomORM {
                 long transactionID = resultSet.getLong(1);
                 String date = resultSet.getString(2);
                 float amount = resultSet.getFloat(3);
-                String externalIBAN = resultSet.getString(4);
-                String type = resultSet.getString(5);
-                transactions.add(new Transaction(transactionID, date, amount, externalIBAN, type));
+                String description = resultSet.getString(4);
+                String externalIBAN = resultSet.getString(5);
+                String type = resultSet.getString(6);
+                transactions.add(new Transaction(transactionID, date, amount, description, externalIBAN, type));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -382,9 +448,10 @@ public class CustomORM {
                 long transactionID = resultSet.getLong(1);
                 String date = resultSet.getString(2);
                 float amount = resultSet.getFloat(3);
-                String externalIBAN = resultSet.getString(4);
-                String type = resultSet.getString(5);
-                transactions.add(new Transaction(transactionID, date, amount, externalIBAN, type));
+                String description = resultSet.getString(4);
+                String externalIBAN = resultSet.getString(5);
+                String type = resultSet.getString(6);
+                transactions.add(new Transaction(transactionID, date, amount, description, externalIBAN, type));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -522,7 +589,7 @@ public class CustomORM {
             statement.setInt(3, offset);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                int categoryID = resultSet.getInt(1);
+                long categoryID = resultSet.getLong(1);
                 String name = resultSet.getString(2);
                 categories.add(new Category(categoryID, name));
             }
@@ -530,6 +597,186 @@ public class CustomORM {
             e.printStackTrace();
         }
         return categories;
+    }
+
+    /**
+     * Method used to increase the highestCategoryRuleID field of a certain user by one in the database.
+     *
+     * @param userID The id of the user whose highestCategoryRuleID field should be increased.
+     */
+    public void increaseHighestCategoryRuleID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_CATEGORY_RULE_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestCategoryRuleID field of a certain user from the database.
+     *
+     * @param userID The id of the user whose highestCategoryRuleID field should be retrieved.
+     * @return The value of the highestCategoryRuleID field of the user with userID.
+     */
+    public long getHighestCategoryRuleID(int userID) {
+        long highestTransactionID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_CATEGORY_RULE_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestTransactionID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestTransactionID;
+    }
+
+    /**
+     * Method used to insert a CategoryRule into the database.
+     *
+     * @param userID       The id of the user to which this new CategoryRule will belong.
+     * @param categoryRule The CategoryRule object to be inserted into the database.
+     */
+    public void createCategoryRule(int userID, CategoryRule categoryRule) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_CATEGORY_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryRule.getId());
+            statement.setString(3, categoryRule.getDescription());
+            statement.setString(4, categoryRule.getiBAN());
+            statement.setString(5, categoryRule.getType());
+            statement.setLong(6, categoryRule.getCategory_id());
+            statement.setBoolean(7, categoryRule.getApplyOnHistory());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a CategoryRule from the database.
+     *
+     * @param userID         The id of the user from which a CategoryRule should be retrieved.
+     * @param categoryRuleID The id of the to be retrieved CategoryRule.
+     * @return A CategoryRule object containing data retrieved from the database.
+     */
+    public CategoryRule getCategoryRule(int userID, long categoryRuleID) {
+        CategoryRule categoryRule = null;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_CATEGORY_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryRuleID);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String description = resultSet.getString(2);
+                String externalIBAN = resultSet.getString(3);
+                String type = resultSet.getString(4);
+                long categoryID = resultSet.getLong(5);
+                boolean applyOnHistory = resultSet.getBoolean(6);
+                categoryRule = new CategoryRule(categoryRuleID, description, externalIBAN, type, categoryID, applyOnHistory);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categoryRule;
+    }
+
+    /**
+     * Method used to update a CategoryRule in the database.
+     *
+     * @param userID       The id of the user whose CategoryRule with categoryRuleID will be updated.
+     * @param categoryRule The CategoryRule object to be updated in the database.
+     */
+    public void updateCategoryRule(int userID, CategoryRule categoryRule) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(UPDATE_CATEGORY_RULE);
+            statement.setString(1, categoryRule.getDescription());
+            statement.setString(2, categoryRule.getiBAN());
+            statement.setString(3, categoryRule.getType());
+            statement.setLong(4, categoryRule.getCategory_id());
+            statement.setInt(5, userID);
+            statement.setLong(6, categoryRule.getId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to delete a CategoryRule from the database.
+     *
+     * @param userID         The id of the user whose CategoryRule with categoryRuleID will be deleted.
+     * @param categoryRuleID The id of the to be deleted CategoryRule.
+     */
+    public void deleteCategoryRule(int userID, long categoryRuleID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(DELETE_CATEGORY_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, categoryRuleID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a batch of CategoryRule objects belonging to a certain user from the database.
+     *
+     * @param userID The id of the user to who the to be retrieved CategoryRule objects belong.
+     * @return An ArrayList of Category objects.
+     */
+    public ArrayList<CategoryRule> getCategoryRules(int userID) {
+        ArrayList<CategoryRule> categoryRules = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_CATEGORY_RULES);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                long categoryRuleID = resultSet.getLong(1);
+                String description = resultSet.getString(2);
+                String externalIBAN = resultSet.getString(3);
+                String type = resultSet.getString(4);
+                long categoryID = resultSet.getLong(5);
+                boolean applyOnHistory = resultSet.getBoolean(6);
+                categoryRules.add(new CategoryRule(categoryRuleID, description, externalIBAN, type,
+                        categoryID, applyOnHistory));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categoryRules;
+    }
+
+    /**
+     * Method used to retrieve the IDs of all Transactions belonging to the user with userID that match categoryRule.
+     *
+     * @param userID       The ID of the user whose transactionIDs of the Transactions
+     *                     that match categoryRule will be retrieved.
+     * @param categoryRule The CategoryRule to which Transactions of the user with userID will be tested
+     *                     to check whether they match categoryRule.
+     * @return An ArrayList consisting of the transactionIDs of the Transactions belonging to the user with userID
+     * that match categoryRule.
+     */
+    public ArrayList<Long> getMatchingTransactionIDs(int userID, CategoryRule categoryRule) {
+        ArrayList<Long> matchingTransactionIDs = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_MATCHING_TRANSACTION_IDS);
+            statement.setInt(1, userID);
+            statement.setString(2, "%" + categoryRule.getDescription() + "%");
+            statement.setString(3, "%" + categoryRule.getiBAN() + "%");
+            statement.setString(4, "%" + categoryRule.getType() + "%");
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                matchingTransactionIDs.add(resultSet.getLong(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return matchingTransactionIDs;
     }
 
     /**

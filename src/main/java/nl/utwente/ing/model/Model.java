@@ -3,6 +3,7 @@ package nl.utwente.ing.model;
 import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
 import nl.utwente.ing.model.bean.Category;
+import nl.utwente.ing.model.bean.CategoryRule;
 import nl.utwente.ing.model.bean.Session;
 import nl.utwente.ing.model.bean.Transaction;
 
@@ -16,6 +17,13 @@ import java.util.ArrayList;
  * @author Daan Kooij
  */
 public interface Model {
+
+    /**
+     * Method used to create and retrieve a new Session.
+     *
+     * @return A new Session.
+     */
+    Session getSession();
 
     /**
      * Method used to retrieve the transactions belonging to a certain user.
@@ -35,14 +43,15 @@ public interface Model {
      * @param sessionID    The sessionID of the user.
      * @param date         The date of the to be created Transaction.
      * @param amount       The amount of the to be created Transaction.
+     * @param description  The description of the to be created Transaction.
      * @param externalIBAN The external IBAN of the to be created Transaction.
      * @param type         The type of the to be created Transaction.
      * @param categoryID   The categoryID of the Category that will be assigned to the to be created Transaction
      *                     (0 if no Category).
      * @return The Transaction created by this method.
      */
-    Transaction postTransaction(String sessionID, String date, float amount, String externalIBAN, String type,
-                                long categoryID) throws InvalidSessionIDException, ResourceNotFoundException;
+    Transaction postTransaction(String sessionID, String date, float amount, String description, String externalIBAN,
+                                String type, long categoryID) throws InvalidSessionIDException, ResourceNotFoundException;
 
     /**
      * Method used to retrieve a certain Transaction of a certain user.
@@ -61,14 +70,15 @@ public interface Model {
      * @param transactionID The transactionID of the Transaction that will be updated.
      * @param date          The new date of the to be updated Transaction.
      * @param amount        The new amount of the to be updated Transaction.
+     * @param description   The new description of the to be updated Transaction.
      * @param externalIBAN  The new external IBAN of the to be updated Transaction.
      * @param type          The new type of the to be updated Transaction.
      * @param categoryID    The new categoryID of the Category that will be assigned to the to be updated Transaction
      *                      (0 if no Category).
      * @return The Transaction updated by this method.
      */
-    Transaction putTransaction(String sessionID, long transactionID, String date, float amount, String externalIBAN,
-                               String type, long categoryID)
+    Transaction putTransaction(String sessionID, long transactionID, String date, float amount, String description,
+                               String externalIBAN, String type, long categoryID)
             throws InvalidSessionIDException, ResourceNotFoundException;
 
     /**
@@ -139,11 +149,51 @@ public interface Model {
      */
     void deleteCategory(String sessionID, long categoryID) throws InvalidSessionIDException, ResourceNotFoundException;
 
+
     /**
-     * Method used to create and retrieve a new Session.
+     * Method used to retrieve the CategoryRules belonging to a certain user.
      *
-     * @return A new Session.
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of CategoryRules belonging to the user with sessionID.
      */
-    Session getSession();
+    ArrayList<CategoryRule> getCategoryRules(String sessionID) throws InvalidSessionIDException;
+
+    /**
+     * Method used to create a new CategoryRule for a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param categoryRule The CategoryRule object to be used to create the new CategoryRule.
+     * @return The CategoryRule created by this method.
+     */
+    CategoryRule postCategoryRule(String sessionID, CategoryRule categoryRule) throws InvalidSessionIDException;
+
+    /**
+     * Method used to retrieve a certain CategoryRule of a certain user.
+     *
+     * @param sessionID      The sessionID of the user.
+     * @param categoryRuleID The categoryRuleID of the CategoryRule that will be retrieved.
+     * @return The CategoryRule with categoryRuleID belonging to the user with sessionID.
+     */
+    CategoryRule getCategoryRule(String sessionID, long categoryRuleID)
+            throws InvalidSessionIDException, ResourceNotFoundException;
+
+    /**
+     * Method used to update a certain CategoryRule of a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param categoryRule The CategoryRule object that will be used to update the CategoryRule with ID of this object.
+     * @return The CategoryRule updated by this method.
+     */
+    CategoryRule putCategoryRule(String sessionID, CategoryRule categoryRule)
+            throws InvalidSessionIDException, ResourceNotFoundException;
+
+    /**
+     * Method used to remove a certain CategoryRule of a certain user.
+     *
+     * @param sessionID      The sessionID of the user.
+     * @param categoryRuleID The categoryRuleID of the CategoryRule that will be deleted.
+     */
+    void deleteCategoryRule(String sessionID, long categoryRuleID)
+            throws InvalidSessionIDException, ResourceNotFoundException;
 
 }
