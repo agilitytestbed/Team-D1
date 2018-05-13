@@ -2,7 +2,9 @@ package nl.utwente.ing.api;
 
 import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
+import nl.utwente.ing.misc.date.IntervalPeriod;
 import nl.utwente.ing.model.Model;
+import nl.utwente.ing.model.bean.BalanceCandlestick;
 import nl.utwente.ing.model.bean.Category;
 import nl.utwente.ing.model.bean.CategoryRule;
 import nl.utwente.ing.model.bean.Transaction;
@@ -124,6 +126,7 @@ public class MainRestController {
         if (!t.getType().equals("deposit") && !t.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
+        t.setAmount(Math.abs(t.getAmount()));
         if (t.getDescription() == null) {
             t.setDescription("");
         }
@@ -194,6 +197,7 @@ public class MainRestController {
                 !t.getType().equals("deposit") && !t.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
+        t.setAmount(Math.abs(t.getAmount()));
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
             long transactionIDLong = Long.parseLong(transactionID);
@@ -492,19 +496,19 @@ public class MainRestController {
     /**
      * Method used to update a certain CategoryRule belonging to the user issuing the current request.
      *
-     * @param pSessionID The sessionID specified in the request parameters.
-     * @param hSessionID The sessionID specified in the HTTP header.
+     * @param pSessionID     The sessionID specified in the request parameters.
+     * @param hSessionID     The sessionID specified in the HTTP header.
      * @param categoryRuleID The categoryRuleID of the CategoryRule that will be updated.
-     * @param cr          The CategoryRule object as specified in the json HTTP body.
+     * @param cr             The CategoryRule object as specified in the json HTTP body.
      * @return A ResponseEntity containing a HTTP status code and either a status message or
      * the CategoryRule updated using this method.
      */
     @RequestMapping(method = RequestMethod.PUT,
             value = RestControllerConstants.URI_PREFIX + "/categoryRules/{categoryRuleID}")
     public ResponseEntity putCategoryRule(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
-                                      @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
-                                      @PathVariable String categoryRuleID,
-                                      @RequestBody CategoryRule cr) {
+                                          @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                          @PathVariable String categoryRuleID,
+                                          @RequestBody CategoryRule cr) {
         if (cr == null || cr.getDescription() == null || cr.getiBAN() == null || cr.getType() == null ||
                 cr.getCategory_id() <= 0) {
             return ResponseEntity.status(405).body("Invalid input given");
@@ -528,16 +532,16 @@ public class MainRestController {
     /**
      * Method used to remove a certain CategoryRule belonging to the user issuing the current request.
      *
-     * @param pSessionID The sessionID specified in the request parameters.
-     * @param hSessionID The sessionID specified in the HTTP header.
+     * @param pSessionID     The sessionID specified in the request parameters.
+     * @param hSessionID     The sessionID specified in the HTTP header.
      * @param categoryRuleID The categoryRuleID of the CategoryRule that will be deleted.
      * @return A ResponseEntity containing a HTTP status code and a status message.
      */
     @RequestMapping(method = RequestMethod.DELETE,
             value = RestControllerConstants.URI_PREFIX + "/categoryRules/{categoryRuleID}")
     public ResponseEntity deleteCategoryRule(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
-                                         @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
-                                         @PathVariable String categoryRuleID) {
+                                             @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                             @PathVariable String categoryRuleID) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
             long categoryRuleIDLong = Long.parseLong(categoryRuleID);
@@ -549,5 +553,55 @@ public class MainRestController {
             return ResponseEntity.status(404).body("Resource not found");
         }
     }
+
+    /**
+     * Method used to retrieve balance history of to the user issuing the current request.
+     *
+     * @param pSessionID The sessionID specified in the request parameters.
+     * @param hSessionID The sessionID specified in the HTTP header.
+     * @param interval   The interval size specifying the length of intervals (default = "month") for which the balance
+     *                   history should be computed.
+     * @param intervals  The amount of intervals for which the balance history should be computed.
+     * @return A ResponseEntity containing a HTTP status code and either a status message or
+     * an ArrayList of BalanceCandlestick of balance history based on the parameters specified by the user.
+     */
+    @RequestMapping(method = RequestMethod.GET,
+            value = RestControllerConstants.URI_PREFIX + "/balance/history")
+    public ResponseEntity getBalanceHistory(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                            @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                            @RequestParam(value = "interval", defaultValue = "month") String interval,
+                                            @RequestParam(value = "intervals", defaultValue = "24") String intervals) {
+        int amount = 24;
+        try {
+            amount = Integer.parseInt(intervals);
+        } catch (NumberFormatException e) {
+            // Do nothing
+        }
+
+        IntervalPeriod intervalPeriod;
+        if (interval.equals("year")) {
+            intervalPeriod = IntervalPeriod.YEAR;
+        } else if (interval.equals("month")) {
+            intervalPeriod = IntervalPeriod.MONTH;
+        } else if (interval.equals("week")) {
+            intervalPeriod = IntervalPeriod.WEEK;
+        } else if (interval.equals("day")) {
+            intervalPeriod = IntervalPeriod.DAY;
+        } else if (interval.equals("hour")) {
+            intervalPeriod = IntervalPeriod.HOUR;
+        } else {
+            return ResponseEntity.status(405).body("Invalid input given");
+        }
+
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            ArrayList<BalanceCandlestick> balanceCandlesticks =
+                    model.getBalanceHistory(sessionID, intervalPeriod, amount);
+            return ResponseEntity.status(200).body(balanceCandlesticks);
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        }
+    }
+
 
 }

@@ -151,6 +151,24 @@ public class CustomORM {
                     "AND description LIKE ?\n" +
                     "AND external_iban LIKE ?\n" +
                     "AND type LIKE ?;";
+    public static final String GET_DEPOSITS_ON_DATE =
+            "SELECT SUM(amount)\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND date <= ?\n" +
+                    "AND type = 'deposit';";
+    public static final String GET_WITHDRAWALS_ON_DATE =
+            "SELECT SUM(amount)\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND date <= ?\n" +
+                    "AND type = 'withdrawal';";
+    public static final String GET_TRANSACTIONS_AFTER_DATE =
+            "SELECT transaction_id, date, amount, description, external_iban, type\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND date > ?\n" +
+                    "ORDER BY date ASC;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -777,6 +795,65 @@ public class CustomORM {
             e.printStackTrace();
         }
         return matchingTransactionIDs;
+    }
+
+    /**
+     * Method used to retrieve the account balance of a certain user on a certain data from the database.
+     *
+     * @param userID The id of the user from who the balance should be retrieved.
+     * @param date   The date of which the balance should be retrieved.
+     * @return The account balance of a certain user on a certain date.
+     */
+    public float getBalanceOnDate(int userID, String date) {
+        float balance = 0;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_DEPOSITS_ON_DATE);
+            statement.setInt(1, userID);
+            statement.setString(2, date);
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            balance += resultSet.getFloat(1);
+
+            statement = connection.prepareStatement(GET_WITHDRAWALS_ON_DATE);
+            statement.setInt(1, userID);
+            statement.setString(2, date);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            balance -= resultSet.getFloat(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return balance;
+    }
+
+    /**
+     * Method used to retrieve a batch of Transaction objects after a certain date
+     * belonging to a certain user from the database.
+     *
+     * @param userID    The id of the user to who the to be retrieved Transaction objects belong.
+     * @param afterDate The date after which Transactions should be retrieved.
+     * @return An ArrayList of Transaction objects.
+     */
+    public ArrayList<Transaction> getTransactionsAfterDate(int userID, String afterDate) {
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_AFTER_DATE);
+            statement.setInt(1, userID);
+            statement.setString(2, afterDate);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                long transactionID = resultSet.getLong(1);
+                String date = resultSet.getString(2);
+                float amount = resultSet.getFloat(3);
+                String description = resultSet.getString(4);
+                String externalIBAN = resultSet.getString(5);
+                String type = resultSet.getString(6);
+                transactions.add(new Transaction(transactionID, date, amount, description, externalIBAN, type));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
     }
 
     /**
