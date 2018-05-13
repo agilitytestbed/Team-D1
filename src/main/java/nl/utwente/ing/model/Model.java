@@ -2,10 +2,8 @@ package nl.utwente.ing.model;
 
 import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
-import nl.utwente.ing.model.bean.Category;
-import nl.utwente.ing.model.bean.CategoryRule;
-import nl.utwente.ing.model.bean.Session;
-import nl.utwente.ing.model.bean.Transaction;
+import nl.utwente.ing.misc.date.IntervalPeriod;
+import nl.utwente.ing.model.bean.*;
 
 import java.util.ArrayList;
 
@@ -195,5 +193,17 @@ public interface Model {
      */
     void deleteCategoryRule(String sessionID, long categoryRuleID)
             throws InvalidSessionIDException, ResourceNotFoundException;
+
+    /**
+     * Method used to retrieve balance history information of a certain user in the form of a list of
+     * BalanceCandlesticks.
+     *
+     * @param sessionID      The sessionID of the user.
+     * @param intervalPeriod The IntervalPeriod specifying the span of intervals.
+     * @param amount         The amount of intervals for which BalanceCandlesticks should be generated.
+     * @return The balance history information of a certain user in the form of a list of BalanceCandlesticks.
+     */
+    ArrayList<BalanceCandlestick> getBalanceHistory(String sessionID, IntervalPeriod intervalPeriod, int amount)
+            throws InvalidSessionIDException;
 
 }
