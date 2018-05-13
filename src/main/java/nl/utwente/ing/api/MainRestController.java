@@ -126,6 +126,7 @@ public class MainRestController {
         if (!t.getType().equals("deposit") && !t.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
+        t.setAmount(Math.abs(t.getAmount()));
         if (t.getDescription() == null) {
             t.setDescription("");
         }
@@ -196,6 +197,7 @@ public class MainRestController {
                 !t.getType().equals("deposit") && !t.getType().equals("withdrawal")) {
             return ResponseEntity.status(405).body("Invalid input given (type should be 'deposit' or 'withdrawal')");
         }
+        t.setAmount(Math.abs(t.getAmount()));
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
             long transactionIDLong = Long.parseLong(transactionID);

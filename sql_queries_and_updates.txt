@@ -154,11 +154,19 @@ AND description LIKE ?
 AND external_iban LIKE ?
 AND type LIKE ?;
 
-    getBalanceOnDate(user_id, date):
+    getDepositsOnDate(user_id, date):
 SELECT SUM(amount)
 FROM Transaction_Table
 WHERE user_id = ?
-AND date <= ?;
+AND date <= ?
+AND type = 'deposit';
+
+    getWithdrawalsOnDate(user_id, date):
+SELECT SUM(amount)
+FROM Transaction_Table
+WHERE user_id = ?
+AND date <= ?
+AND type = 'withdrawal';
 
     getTransactionsAfterDate(user_id, date):
 SELECT transaction_id, date, amount, description, external_iban, type

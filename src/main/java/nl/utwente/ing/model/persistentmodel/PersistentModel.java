@@ -470,7 +470,11 @@ public class PersistentModel implements Model {
             BalanceCandlestick candlestick = new BalanceCandlestick(balance);
             while (index < transactions.size() &&
                     !IntervalHelper.isSmallerThan(interval, transactions.get(index).getDate())) {
-                candlestick.mutation(transactions.get(index).getAmount());
+                if (transactions.get(index).getType().equals("deposit")) {
+                    candlestick.mutation(transactions.get(index).getAmount());
+                } else {
+                    candlestick.mutation(transactions.get(index).getAmount() * (-1));
+                }
                 balance = candlestick.getClose();
                 index++;
             }

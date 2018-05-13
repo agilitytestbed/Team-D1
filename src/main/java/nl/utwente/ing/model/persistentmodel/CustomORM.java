@@ -151,11 +151,18 @@ public class CustomORM {
                     "AND description LIKE ?\n" +
                     "AND external_iban LIKE ?\n" +
                     "AND type LIKE ?;";
-    public static final String GET_BALANCE_ON_DATE =
+    public static final String GET_DEPOSITS_ON_DATE =
             "SELECT SUM(amount)\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
-                    "AND date <= ?;";
+                    "AND date <= ?\n" +
+                    "AND type = 'deposit';";
+    public static final String GET_WITHDRAWALS_ON_DATE =
+            "SELECT SUM(amount)\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND date <= ?\n" +
+                    "AND type = 'withdrawal';";
     public static final String GET_TRANSACTIONS_AFTER_DATE =
             "SELECT transaction_id, date, amount, description, external_iban, type\n" +
                     "FROM Transaction_Table\n" +
@@ -800,12 +807,19 @@ public class CustomORM {
     public float getBalanceOnDate(int userID, String date) {
         float balance = 0;
         try {
-            PreparedStatement statement = connection.prepareStatement(GET_BALANCE_ON_DATE);
+            PreparedStatement statement = connection.prepareStatement(GET_DEPOSITS_ON_DATE);
             statement.setInt(1, userID);
             statement.setString(2, date);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
-            balance = resultSet.getFloat(1);
+            balance += resultSet.getFloat(1);
+
+            statement = connection.prepareStatement(GET_WITHDRAWALS_ON_DATE);
+            statement.setInt(1, userID);
+            statement.setString(2, date);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            balance -= resultSet.getFloat(1);
         } catch (SQLException e) {
             e.printStackTrace();
         }
