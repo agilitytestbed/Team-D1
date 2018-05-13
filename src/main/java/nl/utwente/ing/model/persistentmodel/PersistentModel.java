@@ -2,15 +2,14 @@ package nl.utwente.ing.model.persistentmodel;
 
 import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
+import nl.utwente.ing.misc.date.IntervalHelper;
+import nl.utwente.ing.misc.date.IntervalPeriod;
 import nl.utwente.ing.model.Model;
-import nl.utwente.ing.model.bean.Category;
-import nl.utwente.ing.model.bean.CategoryRule;
-import nl.utwente.ing.model.bean.Session;
-import nl.utwente.ing.model.bean.Transaction;
+import nl.utwente.ing.model.bean.*;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -444,6 +443,41 @@ public class PersistentModel implements Model {
         } else {
             throw new ResourceNotFoundException();
         }
+    }
+
+    /**
+     * Method used to retrieve balance history information of a certain user in the form of a list of
+     * BalanceCandlesticks.
+     *
+     * @param sessionID The sessionID of the user.
+     * @param intervalPeriod The IntervalPeriod specifying the span of intervals.
+     * @param amount The amount of intervals for which BalanceCandlesticks should be generated.
+     * @return The balance history information of a certain user in the form of a list of BalanceCandlesticks.
+     */
+    public ArrayList<BalanceCandlestick> getBalanceHistory(String sessionID, IntervalPeriod intervalPeriod, int amount)
+            throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        LocalDateTime[] intervals = IntervalHelper.getIntervals(intervalPeriod, amount);
+
+        String startingDate = IntervalHelper.dateToString(intervals[0]);
+        float balance = customORM.getBalanceOnDate(userID, startingDate);
+        ArrayList<Transaction> transactions = customORM.getTransactionsAfterDate(userID, startingDate);
+
+        ArrayList<BalanceCandlestick> candlesticks = new ArrayList<>();
+        int index = 0;
+        for (int i = 1; i <= amount; i++) {
+            LocalDateTime interval = intervals[i];
+            BalanceCandlestick candlestick = new BalanceCandlestick(balance);
+            while (index < transactions.size() &&
+                    !IntervalHelper.isSmallerThan(interval, transactions.get(index).getDate())) {
+                candlestick.mutation(transactions.get(index).getAmount());
+                balance = candlestick.getClose();
+                index++;
+            }
+            candlesticks.add(candlestick);
+        }
+
+        return candlesticks;
     }
 
     /**
