@@ -110,8 +110,6 @@ WHERE user_id = ?
 LIMIT ?
 OFFSET ?;
 
-
-
 	increaseHighestCategoryRuleID(user_id):
 UPDATE User_Table
 SET highest_category_rule_id = highest_category_rule_id + 1
@@ -156,7 +154,18 @@ AND description LIKE ?
 AND external_iban LIKE ?
 AND type LIKE ?;
 
+    getBalanceOnDate(user_id, date):
+SELECT SUM(amount)
+FROM Transaction_Table
+WHERE user_id = ?
+AND date <= ?;
 
+    getTransactionsAfterDate(user_id, date):
+SELECT transaction_id, date, amount, description, external_iban, type
+FROM Transaction_Table
+WHERE user_id = ?
+AND date > ?
+ORDER BY date ASC;
 
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
