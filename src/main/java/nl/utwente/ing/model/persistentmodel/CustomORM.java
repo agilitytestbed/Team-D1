@@ -2,6 +2,7 @@ package nl.utwente.ing.model.persistentmodel;
 
 import nl.utwente.ing.model.bean.Category;
 import nl.utwente.ing.model.bean.CategoryRule;
+import nl.utwente.ing.model.bean.SavingGoal;
 import nl.utwente.ing.model.bean.Transaction;
 
 import java.sql.Connection;
@@ -169,6 +170,31 @@ public class CustomORM {
                     "WHERE user_id = ?\n" +
                     "AND date > ?\n" +
                     "ORDER BY date ASC;";
+    public static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_saving_goal_id = highest_saving_goal_id + 1\n" +
+                    "WHERE user_id = ?;";
+    public static final String GET_HIGHEST_SAVING_GOAL_ID =
+            "SELECT highest_saving_goal_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    public static final String CREATE_SAVING_GOAL =
+            "INSERT INTO Saving_Goal (user_id, saving_goal_id, creation_date, name, goal, " +
+                    "save_per_month, min_balance_required)\n" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?);";
+    public static final String GET_SAVING_GOAL =
+            "SELECT saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required\n" +
+                    "FROM Saving_Goal\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND saving_goal_id = ?;";
+    public static final String DELETE_SAVING_GOAL =
+            "DELETE FROM Saving_Goal\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND saving_goal_id = ?;";
+    public static final String GET_SAVING_GOALS =
+            "SELECT saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required\n" +
+                    "FROM Saving_Goal\n" +
+                    "WHERE user_id = ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -193,8 +219,9 @@ public class CustomORM {
                     "AND t.user_id = ?\n" +
                     "AND t.transaction_id = ?;";
     private static final String CREATE_NEW_USER =
-            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id)\n" +
-                    "VALUES (?, 0, 0, 0);";
+            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, " +
+                    "highest_category_rule_id, highest_saving_goal_id)\n" +
+                    "VALUES (?, 0, 0, 0, 0);";
     private static final String GET_USER_ID =
             "SELECT user_id\n" +
                     "FROM User_Table\n" +
@@ -743,7 +770,7 @@ public class CustomORM {
      * Method used to retrieve a batch of CategoryRule objects belonging to a certain user from the database.
      *
      * @param userID The id of the user to who the to be retrieved CategoryRule objects belong.
-     * @return An ArrayList of Category objects.
+     * @return An ArrayList of CategoryRule objects.
      */
     public ArrayList<CategoryRule> getCategoryRules(int userID) {
         ArrayList<CategoryRule> categoryRules = new ArrayList<>();
@@ -854,6 +881,137 @@ public class CustomORM {
             e.printStackTrace();
         }
         return transactions;
+    }
+
+    /**
+     * Method used to increase the highestSavingGoalID field of a certain user by one in the database.
+     *
+     * @param userID The ID of the user whose highestSavingGoalID field should be increased.
+     */
+    public void increaseHighestSavingGoalID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_SAVING_GOAL_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestSavingGoalID field of a certain user from the database.
+     *
+     * @param userID The ID of the user whose highestSavingGoalID field should be retrieved.
+     * @return The value of the highestSavingGoalID field of the user with userID.
+     */
+    public long getHighestSavingGoalID(int userID) {
+        long highestSavingGoalID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_SAVING_GOAL_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestSavingGoalID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestSavingGoalID;
+    }
+
+    /**
+     * Method used to insert a SavingGoal into the database.
+     *
+     * @param userID     The ID of the user to which this new SavingGoal will belong.
+     * @param savingGoal The SavingGoal object to be inserted into the database.
+     */
+    public void createSavingGoal(int userID, SavingGoal savingGoal) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_SAVING_GOAL);
+            statement.setInt(1, userID);
+            statement.setLong(2, savingGoal.getId());
+            statement.setString(3, savingGoal.getCreationDate());
+            statement.setString(4, savingGoal.getName());
+            statement.setFloat(5, savingGoal.getGoal());
+            statement.setFloat(6, savingGoal.getSavePerMonth());
+            statement.setFloat(7, savingGoal.getMinBalanceRequired());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a SavingGoal from the database.
+     *
+     * @param userID         The id of the user from which a SavingGoal should be retrieved.
+     * @param savingGoalID The id of the to be retrieved SavingGoal.
+     * @return A SavingGoal object containing data retrieved from the database.
+     */
+    public SavingGoal getSavingGoal(int userID, long savingGoalID) {
+        SavingGoal savingGoal = null;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_SAVING_GOAL);
+            statement.setInt(1, userID);
+            statement.setLong(2, savingGoalID);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                savingGoalID = resultSet.getLong(1);
+                String creationDate = resultSet.getString(2);
+                String name = resultSet.getString(3);
+                float goal = resultSet.getFloat(4);
+                float savePerMonth = resultSet.getFloat(5);
+                float minBalanceRequired = resultSet.getFloat(6);
+                savingGoal = new SavingGoal(savingGoalID, creationDate, name, goal, savePerMonth, minBalanceRequired);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return savingGoal;
+    }
+
+    /**
+     * Method used to delete a SavingGoal from the database.
+     *
+     * @param userID       The ID of the user whose SavingGoal with savingGoalID will be deleted.
+     * @param savingGoalID The ID of the to be deleted SavingGoal.
+     */
+    public void deleteSavingGoal(int userID, long savingGoalID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(DELETE_SAVING_GOAL);
+            statement.setInt(1, userID);
+            statement.setLong(2, savingGoalID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a batch of SavingGoal objects belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved SavingGoal objects belong.
+     * @return An ArrayList of SavingGoal objects.
+     */
+    public ArrayList<SavingGoal> getSavingGoals(int userID) {
+        ArrayList<SavingGoal> savingGoals = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_SAVING_GOALS);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                long savingGoalID = resultSet.getLong(1);
+                String creationDate = resultSet.getString(2);
+                String name = resultSet.getString(3);
+                float goal = resultSet.getFloat(4);
+                float savePerMonth = resultSet.getFloat(5);
+                float minBalanceRequired = resultSet.getFloat(6);
+                savingGoals.add(new SavingGoal(savingGoalID, creationDate, name, goal,
+                        savePerMonth, minBalanceRequired));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return savingGoals;
     }
 
     /**
