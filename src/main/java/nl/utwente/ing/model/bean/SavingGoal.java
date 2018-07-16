@@ -1,6 +1,7 @@
 package nl.utwente.ing.model.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import nl.utwente.ing.misc.date.IntervalHelper;
 
 /**
  * The SavingGoal class.
@@ -165,6 +166,17 @@ public class SavingGoal {
         float saved = Math.min(leftToSave, savePerMonth);
         balance += saved;
         return saved;
+    }
+
+    /**
+     * Method used to retrieve the month identifier of the creation date of SavingGoal.
+     * Ignored by the REST Controller.
+     *
+     * @return The month identifier of the creation date of SavingGoal.
+     */
+    @JsonIgnore
+    public int getMonthIdentifier() {
+        return IntervalHelper.getMonthIdentifier(creationDate);
     }
 
 }

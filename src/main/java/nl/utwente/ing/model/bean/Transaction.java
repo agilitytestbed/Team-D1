@@ -1,5 +1,8 @@
 package nl.utwente.ing.model.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import nl.utwente.ing.misc.date.IntervalHelper;
+
 /**
  * The Transaction class.
  * Used to store information about a Transaction.
@@ -168,4 +171,16 @@ public class Transaction {
     public void setCategory(Category category) {
         this.category = category;
     }
+
+    /**
+     * Method used to retrieve the month identifier of the date of Transaction.
+     * Ignored by the REST Controller.
+     *
+     * @return The month identifier of the date of Transaction.
+     */
+    @JsonIgnore
+    public int getMonthIdentifier() {
+        return IntervalHelper.getMonthIdentifier(date);
+    }
+
 }
