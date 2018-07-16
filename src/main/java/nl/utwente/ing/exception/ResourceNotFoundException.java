@@ -2,12 +2,12 @@ package nl.utwente.ing.exception;
 
 /**
  * The ResourceNotFoundException class.
- * Extends Exception and implements APIException.
+ * Extends APIException.
  * ResourceNotFoundException is thrown whenever a resource is not found.
  *
  * @author Daan Kooij
  */
-public class ResourceNotFoundException extends Exception implements APIException {
+public class ResourceNotFoundException extends APIException {
 
     /**
      * The empty constructor of ResourceNotFoundException.

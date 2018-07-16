@@ -1,11 +1,19 @@
 package nl.utwente.ing.exception;
 
 /**
- * The APIException interface.
- * Used as the parent of all APIExceptions.
+ * The APIException class.
+ * Extends Exception.
+ * Used as the superclass of all APIExceptions.
  *
  * @author Daan Kooij
  */
-public interface APIException {
+public class APIException extends Exception {
+
+    /**
+     * The empty constructor of APIException.
+     */
+    public APIException() {
+
+    }
 
 }
