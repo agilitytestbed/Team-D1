@@ -1,6 +1,7 @@
 package nl.utwente.ing.misc.date;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * The IntervalHelper class.
@@ -27,7 +28,7 @@ public class IntervalHelper {
      */
     public static LocalDateTime[] getIntervals(IntervalPeriod intervalPeriod, int amount) {
         LocalDateTime[] intervals = new LocalDateTime[amount + 1];
-        intervals[amount] = LocalDateTime.now();
+        intervals[amount] = LocalDateTime.now(ZoneOffset.UTC);
 
         if (intervalPeriod == IntervalPeriod.YEAR) {
             for (int i = amount - 1; i >= 0; i--) {
