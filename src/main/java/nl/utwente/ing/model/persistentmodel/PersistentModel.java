@@ -495,7 +495,39 @@ public class PersistentModel implements Model {
      */
     public ArrayList<SavingGoal> getSavingGoals(String sessionID) throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
-        return customORM.getSavingGoals(userID);
+        ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);
+        ArrayList<Transaction> transactions = customORM.getTransactionsAfterDate(userID,
+                "1970-01-01T00:00:00.000Z"); // Every transaction should be after this date
+
+        if (transactions.size() > 0) {
+            float balance = 0;
+            int previousMonthIdentifier = transactions.get(0).getMonthIdentifier();
+            for (Transaction transaction : transactions) {
+
+                // For every month elapsed since last transaction, check if money should be set apart
+                for (int i = previousMonthIdentifier; i < transaction.getMonthIdentifier(); i++) {
+                    // For every saving goal, check if money should be set apart
+                    for (SavingGoal savingGoal : savingGoals) {
+                        if (balance >= savingGoal.getMinBalanceRequired()) {
+                            // Set apart money and update balance accordingly
+                            balance -= savingGoal.setApart();
+                        }
+                    }
+                }
+
+                // Update balance according to transaction
+                float amount = transaction.getAmount();
+                if (transaction.getType().equals("deposit")) {
+                    balance += amount;
+                } else {
+                    balance -= amount;
+                }
+
+                previousMonthIdentifier = transaction.getMonthIdentifier();
+            }
+        }
+
+        return savingGoals;
     }
 
     /**
