@@ -458,31 +458,53 @@ public class PersistentModel implements Model {
     public ArrayList<BalanceCandlestick> getBalanceHistory(String sessionID, IntervalPeriod intervalPeriod, int amount)
             throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
+
         LocalDateTime[] intervals = IntervalHelper.getIntervals(intervalPeriod, amount);
 
-        String startingDate = IntervalHelper.dateToString(intervals[0]);
-        float balance = customORM.getBalanceOnDate(userID, startingDate);
-        ArrayList<Transaction> transactions = customORM.getTransactionsAfterDate(userID, startingDate);
-
+        ArrayList<Transaction> transactions = customORM.getTransactionsAscending(userID);
+        ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);
         ArrayList<BalanceCandlestick> candlesticks = new ArrayList<>();
+
+        float balance = 0;
         int index = 0;
-        for (int i = 1; i <= amount; i++) {
+        for (int i = 1; i <= amount + 1; i++) {
             LocalDateTime startInterval = intervals[i - 1];
             LocalDateTime endInterval = intervals[i];
-            long startUnixTime =  startInterval.toEpochSecond(ZoneOffset.UTC); // Convert start of interval to UNIX time
+            long startUnixTime = startInterval.toEpochSecond(ZoneOffset.UTC); // Convert start of interval to UNIX time
             BalanceCandlestick candlestick = new BalanceCandlestick(balance, startUnixTime);
+
+            int previousMonthIdentifier = 0;
+            if (transactions.size() > 0) {
+                previousMonthIdentifier = transactions.get(0).getMonthIdentifier();
+            }
             while (index < transactions.size() &&
                     !IntervalHelper.isSmallerThan(endInterval, transactions.get(index).getDate())) {
-                if (transactions.get(index).getType().equals("deposit")) {
-                    candlestick.mutation(transactions.get(index).getAmount());
+                Transaction transaction = transactions.get(index);
+
+                // For every month elapsed since last transaction, check if money should be set apart
+                for (int j = previousMonthIdentifier; j < transaction.getMonthIdentifier(); j++) {
+                    // For every saving goal, check if money should be set apart
+                    for (SavingGoal savingGoal : savingGoals) {
+                        if (balance >= savingGoal.getMinBalanceRequired()) {
+                            // Set apart money and update balance accordingly
+                            balance -= savingGoal.setApart();
+                        }
+                    }
+                }
+                previousMonthIdentifier = transaction.getMonthIdentifier();
+
+                if (transaction.getType().equals("deposit")) {
+                    candlestick.mutation(transaction.getAmount());
                 } else {
-                    candlestick.mutation(transactions.get(index).getAmount() * (-1));
+                    candlestick.mutation(transaction.getAmount() * (-1));
                 }
                 balance = candlestick.getClose();
                 index++;
             }
             candlesticks.add(candlestick);
         }
+
+        candlesticks.remove(0);
 
         return candlesticks;
     }
@@ -496,8 +518,7 @@ public class PersistentModel implements Model {
     public ArrayList<SavingGoal> getSavingGoals(String sessionID) throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
         ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);
-        ArrayList<Transaction> transactions = customORM.getTransactionsAfterDate(userID,
-                "1970-01-01T00:00:00.000Z"); // Every transaction should be after this date
+        ArrayList<Transaction> transactions = customORM.getTransactionsAscending(userID);
 
         if (transactions.size() > 0) {
             float balance = 0;
@@ -514,6 +535,7 @@ public class PersistentModel implements Model {
                         }
                     }
                 }
+                previousMonthIdentifier = transaction.getMonthIdentifier();
 
                 // Update balance according to transaction
                 float amount = transaction.getAmount();
@@ -522,8 +544,6 @@ public class PersistentModel implements Model {
                 } else {
                     balance -= amount;
                 }
-
-                previousMonthIdentifier = transaction.getMonthIdentifier();
             }
         }
 

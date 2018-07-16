@@ -152,23 +152,10 @@ public class CustomORM {
                     "AND description LIKE ?\n" +
                     "AND external_iban LIKE ?\n" +
                     "AND type LIKE ?;";
-    public static final String GET_DEPOSITS_ON_DATE =
-            "SELECT SUM(amount)\n" +
-                    "FROM Transaction_Table\n" +
-                    "WHERE user_id = ?\n" +
-                    "AND date <= ?\n" +
-                    "AND type = 'deposit';";
-    public static final String GET_WITHDRAWALS_ON_DATE =
-            "SELECT SUM(amount)\n" +
-                    "FROM Transaction_Table\n" +
-                    "WHERE user_id = ?\n" +
-                    "AND date <= ?\n" +
-                    "AND type = 'withdrawal';";
-    public static final String GET_TRANSACTIONS_AFTER_DATE =
+    public static final String GET_TRANSACTIONS_ASCENDING =
             "SELECT transaction_id, date, amount, description, external_iban, type\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
-                    "AND date > ?\n" +
                     "ORDER BY date ASC;";
     public static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
             "UPDATE User_Table\n" +
@@ -825,48 +812,16 @@ public class CustomORM {
     }
 
     /**
-     * Method used to retrieve the account balance of a certain user on a certain data from the database.
+     * Method used to retrieve all Transaction objects belonging to a certain user in ascending order from the database.
      *
-     * @param userID The id of the user from who the balance should be retrieved.
-     * @param date   The date of which the balance should be retrieved.
-     * @return The account balance of a certain user on a certain date.
-     */
-    public float getBalanceOnDate(int userID, String date) {
-        float balance = 0;
-        try {
-            PreparedStatement statement = connection.prepareStatement(GET_DEPOSITS_ON_DATE);
-            statement.setInt(1, userID);
-            statement.setString(2, date);
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            balance += resultSet.getFloat(1);
-
-            statement = connection.prepareStatement(GET_WITHDRAWALS_ON_DATE);
-            statement.setInt(1, userID);
-            statement.setString(2, date);
-            resultSet = statement.executeQuery();
-            resultSet.next();
-            balance -= resultSet.getFloat(1);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return balance;
-    }
-
-    /**
-     * Method used to retrieve a batch of Transaction objects after a certain date
-     * belonging to a certain user from the database.
-     *
-     * @param userID    The id of the user to who the to be retrieved Transaction objects belong.
-     * @param afterDate The date after which Transactions should be retrieved.
+     * @param userID The id of the user to who the to be retrieved Transaction objects belong.
      * @return An ArrayList of Transaction objects.
      */
-    public ArrayList<Transaction> getTransactionsAfterDate(int userID, String afterDate) {
+    public ArrayList<Transaction> getTransactionsAscending(int userID) {
         ArrayList<Transaction> transactions = new ArrayList<>();
         try {
-            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_AFTER_DATE);
+            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_ASCENDING);
             statement.setInt(1, userID);
-            statement.setString(2, afterDate);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 long transactionID = resultSet.getLong(1);
@@ -942,7 +897,7 @@ public class CustomORM {
     /**
      * Method used to retrieve a SavingGoal from the database.
      *
-     * @param userID         The id of the user from which a SavingGoal should be retrieved.
+     * @param userID       The id of the user from which a SavingGoal should be retrieved.
      * @param savingGoalID The id of the to be retrieved SavingGoal.
      * @return A SavingGoal object containing data retrieved from the database.
      */
