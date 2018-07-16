@@ -488,6 +488,59 @@ public class PersistentModel implements Model {
     }
 
     /**
+     * Method used to retrieve the SavingGoals belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of SavingGoals belonging to the user with sessionID.
+     */
+    public ArrayList<SavingGoal> getSavingGoals(String sessionID) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        return customORM.getSavingGoals(userID);
+    }
+
+    /**
+     * Method used to create a new SavingGoal for a certain user.
+     *
+     * @param sessionID  The sessionID of the user.
+     * @param savingGoal The SavingGoal object to be used to create the new SavingGoal.
+     * @return The SavingGoal created by this method.
+     */
+    public SavingGoal postSavingGoal(String sessionID, SavingGoal savingGoal) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        SavingGoal createdSavingGoal = null;
+        try {
+            connection.setAutoCommit(false);
+            customORM.increaseHighestSavingGoalID(userID);
+            long savingGoalID = customORM.getHighestSavingGoalID(userID);
+            connection.commit();
+            connection.setAutoCommit(true);
+            savingGoal.setId(savingGoalID);
+            customORM.createSavingGoal(userID, savingGoal);
+            createdSavingGoal = customORM.getSavingGoal(userID, savingGoal.getId());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return createdSavingGoal;
+    }
+
+    /**
+     * Method used to remove a certain SavingGoal of a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param savingGoalID The savingGoalID of the SavingGoal that will be deleted.
+     */
+    public void deleteSavingGoal(String sessionID, long savingGoalID)
+            throws InvalidSessionIDException, ResourceNotFoundException {
+        int userID = this.getUserID(sessionID);
+        SavingGoal savingGoal = customORM.getSavingGoal(userID, savingGoalID);
+        if (savingGoal != null) {
+            customORM.deleteSavingGoal(userID, savingGoalID);
+        } else {
+            throw new ResourceNotFoundException();
+        }
+    }
+
+    /**
      * Method used to populate a Transaction object with a Category object.
      *
      * @param transaction The Transaction object that will be populated by a Category object.
@@ -505,7 +558,6 @@ public class PersistentModel implements Model {
      *
      * @param sessionID The sessionID from which the belonging userID will be retrieved.
      * @return The userID belonging to sessionID.
-     * @throws InvalidSessionIDException
      */
     private int getUserID(String sessionID) throws InvalidSessionIDException {
         int userID = customORM.getUserID(sessionID);
