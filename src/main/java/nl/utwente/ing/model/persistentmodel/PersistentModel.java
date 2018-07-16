@@ -10,6 +10,7 @@ import nl.utwente.ing.model.bean.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -466,10 +467,12 @@ public class PersistentModel implements Model {
         ArrayList<BalanceCandlestick> candlesticks = new ArrayList<>();
         int index = 0;
         for (int i = 1; i <= amount; i++) {
-            LocalDateTime interval = intervals[i];
-            BalanceCandlestick candlestick = new BalanceCandlestick(balance);
+            LocalDateTime startInterval = intervals[i - 1];
+            LocalDateTime endInterval = intervals[i];
+            long startUnixTime =  startInterval.toEpochSecond(ZoneOffset.UTC); // Convert start of interval to UNIX time
+            BalanceCandlestick candlestick = new BalanceCandlestick(balance, startUnixTime);
             while (index < transactions.size() &&
-                    !IntervalHelper.isSmallerThan(interval, transactions.get(index).getDate())) {
+                    !IntervalHelper.isSmallerThan(endInterval, transactions.get(index).getDate())) {
                 if (transactions.get(index).getType().equals("deposit")) {
                     candlestick.mutation(transactions.get(index).getAmount());
                 } else {

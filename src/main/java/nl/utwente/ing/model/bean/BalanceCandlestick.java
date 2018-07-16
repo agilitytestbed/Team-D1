@@ -9,21 +9,23 @@ package nl.utwente.ing.model.bean;
 public class BalanceCandlestick {
 
     private float open, close, high, low, volume;
+    private long timestamp;
 
     /**
      * The constructor of BalanceCandlestick.
-     * Initially, only the opening balance is specified, after which this balance can be modified by using the mutate
-     * method. Along the way, this bean keeps track of the opening balance, the closing balance, the highest balance,
-     * the lowest balance and the volume of all the mutations combined.
+     * Initially, only the opening balance and the opening timestamp are specified, after which this balance can be
+     * modified by using the mutate method. Along the way, this bean keeps track of the opening balance, the closing
+     * balance, the highest balance, the lowest balance and the volume of all the mutations combined.
      *
      * @param open The opening balance of this BalanceCandlestick.
      */
-    public BalanceCandlestick(float open) {
+    public BalanceCandlestick(float open, long timestamp) {
         this.open = open;
         this.close = open;
         this.high = open;
         this.low = open;
         this.volume = 0;
+        this.timestamp = timestamp;
     }
 
     /**
@@ -69,6 +71,16 @@ public class BalanceCandlestick {
      */
     public float getVolume() {
         return volume;
+    }
+
+    /**
+     * Method used to retrieve the unix (seconds) timestamp indicating the beginning of the period of the
+     * BalanceCandlestick.
+     *
+     * @return The unix (seconds) timestamp indicating the beginning of the period of the BalanceCandlestick.
+     */
+    public long getTimestamp() {
+        return timestamp;
     }
 
     /**
