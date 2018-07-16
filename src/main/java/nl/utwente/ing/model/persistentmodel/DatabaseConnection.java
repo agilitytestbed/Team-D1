@@ -52,7 +52,8 @@ public class DatabaseConnection {
                             "  session_id TEXT,\n" +
                             "  highest_transaction_id BIGINT,\n" +
                             "  highest_category_id BIGINT,\n" +
-                            "  highest_category_rule_id BIGINT\n" +
+                            "  highest_category_rule_id BIGINT,\n" +
+                            "  highest_saving_goal_id BIGINT\n" +
                             ");"
             );
             statement.executeUpdate(
