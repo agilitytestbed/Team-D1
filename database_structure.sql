@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS User_Table(
   session_id TEXT,
   highest_transaction_id BIGINT,
   highest_category_id BIGINT,
-  highest_category_rule_id BIGINT
+  highest_category_rule_id BIGINT,
+  highest_saving_goal_id BIGINT
 );
 
 CREATE TABLE IF NOT EXISTS Transaction_Table(
@@ -48,3 +49,16 @@ CREATE TABLE IF NOT EXISTS Category_Rule(
   FOREIGN KEY(category_id) REFERENCES Category_Table(category_id),
   PRIMARY KEY(user_id, category_rule_id)
 );
+
+CREATE TABLE IF NOT EXISTS Saving_Goal(
+  user_id INTEGER,
+  saving_goal_id BIGINT,
+  creation_date DATETIME,
+  name TEXT,
+  goal FLOAT,
+  save_per_month FLOAT,
+  min_balance_required FLOAT,
+  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
+  PRIMARY KEY(user_id, saving_goal_id)
+);
+
