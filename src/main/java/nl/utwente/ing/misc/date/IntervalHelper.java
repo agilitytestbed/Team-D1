@@ -14,40 +14,42 @@ public class IntervalHelper {
     /**
      * Method used to generate a certain number of intervals with certain size.
      * The generation of intervals is done by taking the current datetime and and putting the resulting edges of the
-     * intervals in an array in the form of LocalDateTime objects.
+     * intervals in an array in the form of LocalDateTime objects, in addition to having a LocalDateTime object for the
+     * beginning of UNIX time at the start of the array.
      * <p>
      * Example: suppose the current date is 13 May 2018 and you want to generate five intervals with sizes of one day
      * each. Then you specify intervalPeriod to be IntervalPeriod.DAY and amount to be 5. The returned array will then
-     * be: [8 May 2018, 9 May 2018, 10 May 2018, 11 May 2018, 12 May 2018, 13 May 2018].
+     * be: [1 Jan 1970, 8 May 2018, 9 May 2018, 10 May 2018, 11 May 2018, 12 May 2018, 13 May 2018].
      * <p>
-     * Note that the size of the array is equal to the amount of intervals plus one.
+     * Note that the size of the array is equal to the amount of intervals plus two.
      *
      * @param intervalPeriod The size of the intervals to be generated.
      * @param amount         The amount of intervals to be generated.
      * @return An array containing LocalDateTime objects representing the requested intervals.
      */
     public static LocalDateTime[] getIntervals(IntervalPeriod intervalPeriod, int amount) {
-        LocalDateTime[] intervals = new LocalDateTime[amount + 1];
-        intervals[amount] = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime[] intervals = new LocalDateTime[amount + 2];
+        intervals[amount + 1] = LocalDateTime.now(ZoneOffset.UTC);
+        intervals[0] = LocalDateTime.parse("1970-01-01T00:00:00.000");
 
         if (intervalPeriod == IntervalPeriod.YEAR) {
-            for (int i = amount - 1; i >= 0; i--) {
+            for (int i = amount; i >= 1; i--) {
                 intervals[i] = intervals[i + 1].minusYears(1);
             }
         } else if (intervalPeriod == IntervalPeriod.MONTH) {
-            for (int i = amount - 1; i >= 0; i--) {
+            for (int i = amount; i >= 1; i--) {
                 intervals[i] = intervals[i + 1].minusMonths(1);
             }
         } else if (intervalPeriod == IntervalPeriod.WEEK) {
-            for (int i = amount - 1; i >= 0; i--) {
+            for (int i = amount; i >= 1; i--) {
                 intervals[i] = intervals[i + 1].minusWeeks(1);
             }
         } else if (intervalPeriod == IntervalPeriod.DAY) {
-            for (int i = amount - 1; i >= 0; i--) {
+            for (int i = amount; i >= 1; i--) {
                 intervals[i] = intervals[i + 1].minusDays(1);
             }
         } else {
-            for (int i = amount - 1; i >= 0; i--) {
+            for (int i = amount; i >= 1; i--) {
                 intervals[i] = intervals[i + 1].minusHours(1);
             }
         }
@@ -84,7 +86,6 @@ public class IntervalHelper {
      * Method used to convert a date String object in the format that the DPA uses to a month identifier using the
      * following formula: (currentYear - 1970) * 12 + (monthValue - 1).
      * This method helps in figuring out how many months have elapsed between events (such as Transactions).
-     *
      * @param dateString The String object representing a date in the format the DPA uses from which the month
      *                   identifier should be retrieved.
      * @return The month identifier of the String object representing a date in the format the DPA uses.
