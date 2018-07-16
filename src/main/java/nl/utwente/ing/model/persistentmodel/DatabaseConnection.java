@@ -102,6 +102,17 @@ public class DatabaseConnection {
                             "  PRIMARY KEY(user_id, category_rule_id)\n" +
                             ");"
             );
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Saving_Goal(\n" +
+                    "  user_id INTEGER,\n" +
+                    "  saving_goal_id BIGINT,\n" +
+                    "  creation_date DATETIME,\n" +
+                    "  name TEXT,\n" +
+                    "  goal FLOAT,\n" +
+                    "  save_per_month FLOAT,\n" +
+                    "  min_balance_required FLOAT,\n" +
+                    "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                    "  PRIMARY KEY(user_id, saving_goal_id)\n" +
+                    ");");
             statement.close();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
