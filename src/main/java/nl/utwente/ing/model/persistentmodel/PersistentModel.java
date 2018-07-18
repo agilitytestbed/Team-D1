@@ -465,6 +465,11 @@ public class PersistentModel implements Model {
         ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);
         ArrayList<BalanceCandlestick> candlesticks = new ArrayList<>();
 
+        int previousMonthIdentifier = 0;
+        if (transactions.size() > 0) {
+            previousMonthIdentifier = transactions.get(0).getMonthIdentifier();
+        }
+
         float balance = 0;
         int index = 0;
         for (int i = 1; i <= amount + 1; i++) {
@@ -473,21 +478,18 @@ public class PersistentModel implements Model {
             long startUnixTime = startInterval.toEpochSecond(ZoneOffset.UTC); // Convert start of interval to UNIX time
             BalanceCandlestick candlestick = new BalanceCandlestick(balance, startUnixTime);
 
-            int previousMonthIdentifier = 0;
-            if (transactions.size() > 0) {
-                previousMonthIdentifier = transactions.get(0).getMonthIdentifier();
-            }
             while (index < transactions.size() &&
                     !IntervalHelper.isSmallerThan(endInterval, transactions.get(index).getDate())) {
                 Transaction transaction = transactions.get(index);
-
-                // For every month elapsed since last transaction, check if money should be set apart
                 for (int j = previousMonthIdentifier; j < transaction.getMonthIdentifier(); j++) {
                     // For every saving goal, check if money should be set apart
                     for (SavingGoal savingGoal : savingGoals) {
-                        if (balance >= savingGoal.getMinBalanceRequired()) {
+                        if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() &&
+                                balance >= savingGoal.getMinBalanceRequired()) {
                             // Set apart money and update balance accordingly
-                            balance -= savingGoal.setApart();
+                            float mutation = -savingGoal.setApart();
+                            balance += mutation;
+                            candlestick.mutation(mutation);
                         }
                     }
                 }
@@ -500,6 +502,9 @@ public class PersistentModel implements Model {
                 }
                 balance = candlestick.getClose();
                 index++;
+
+
+
             }
             candlesticks.add(candlestick);
         }
@@ -528,9 +533,11 @@ public class PersistentModel implements Model {
                 for (int i = previousMonthIdentifier; i < transaction.getMonthIdentifier(); i++) {
                     // For every saving goal, check if money should be set apart
                     for (SavingGoal savingGoal : savingGoals) {
-                        if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() && balance >= savingGoal.getMinBalanceRequired()) {
+                        if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() &&
+                                balance >= savingGoal.getMinBalanceRequired()) {
                             // Set apart money and update balance accordingly
-                            balance -= savingGoal.setApart();
+                            float mutation = -savingGoal.setApart();
+                            balance += mutation;
                         }
                     }
                 }
