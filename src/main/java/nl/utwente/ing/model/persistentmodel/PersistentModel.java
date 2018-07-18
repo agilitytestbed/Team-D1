@@ -524,12 +524,11 @@ public class PersistentModel implements Model {
             float balance = 0;
             int previousMonthIdentifier = transactions.get(0).getMonthIdentifier();
             for (Transaction transaction : transactions) {
-
                 // For every month elapsed since last transaction, check if money should be set apart
                 for (int i = previousMonthIdentifier; i < transaction.getMonthIdentifier(); i++) {
                     // For every saving goal, check if money should be set apart
                     for (SavingGoal savingGoal : savingGoals) {
-                        if (balance >= savingGoal.getMinBalanceRequired()) {
+                        if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() && balance >= savingGoal.getMinBalanceRequired()) {
                             // Set apart money and update balance accordingly
                             balance -= savingGoal.setApart();
                         }

@@ -86,6 +86,7 @@ public class IntervalHelper {
      * Method used to convert a date String object in the format that the DPA uses to a month identifier using the
      * following formula: (currentYear - 1970) * 12 + (monthValue - 1).
      * This method helps in figuring out how many months have elapsed between events (such as Transactions).
+     *
      * @param dateString The String object representing a date in the format the DPA uses from which the month
      *                   identifier should be retrieved.
      * @return The month identifier of the String object representing a date in the format the DPA uses.
