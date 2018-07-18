@@ -4,10 +4,7 @@ import nl.utwente.ing.exception.InvalidSessionIDException;
 import nl.utwente.ing.exception.ResourceNotFoundException;
 import nl.utwente.ing.misc.date.IntervalPeriod;
 import nl.utwente.ing.model.Model;
-import nl.utwente.ing.model.bean.BalanceCandlestick;
-import nl.utwente.ing.model.bean.Category;
-import nl.utwente.ing.model.bean.CategoryRule;
-import nl.utwente.ing.model.bean.Transaction;
+import nl.utwente.ing.model.bean.*;
 import nl.utwente.ing.model.persistentmodel.PersistentModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -603,5 +600,77 @@ public class MainRestController {
         }
     }
 
+    /**
+     * Method used to retrieve the SavingGoals belonging to the user issuing the current request.
+     *
+     * @param pSessionID The sessionID specified in the request parameters.
+     * @param hSessionID The sessionID specified in the HTTP header.
+     * @return A ResponseEntity containing a HTTP status code and either a status message or
+     * an ArrayList of SavingGoals belonging to the user issuing the current request.
+     */
+    @RequestMapping(method = RequestMethod.GET,
+            value = RestControllerConstants.URI_PREFIX + "/savingGoals")
+    public ResponseEntity getSavingGoals(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                           @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID) {
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            ArrayList<SavingGoal> savingGoals = model.getSavingGoals(sessionID);
+            return ResponseEntity.status(200).body(savingGoals);
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        }
+    }
+
+    /**
+     * Method used to create a new SavingGoal for the user issuing the current request.
+     *
+     * @param pSessionID The sessionID specified in the request parameters.
+     * @param hSessionID The sessionID specified in the HTTP header.
+     * @param sg         The SavingGoal object as specified in the json HTTP body.
+     * @return A ResponseEntity containing a HTTP status code and either a status message or
+     * the SavingGoal created by using this method.
+     */
+    @RequestMapping(method = RequestMethod.POST,
+            value = RestControllerConstants.URI_PREFIX + "/savingGoals")
+    public ResponseEntity postSavingGoal(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                           @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                           @RequestBody SavingGoal sg) {
+        if (sg == null || sg.getName() == null || sg.getGoal() < 0 || sg.getSavePerMonth() < 0 ||
+                sg.getMinBalanceRequired() < 0) {
+            return ResponseEntity.status(405).body("Invalid input given");
+        }
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            SavingGoal savingGoal = model.postSavingGoal(sessionID, sg);
+            return ResponseEntity.status(201).body(savingGoal);
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        }
+    }
+
+    /**
+     * Method used to remove a certain SavingGoal belonging to the user issuing the current request.
+     *
+     * @param pSessionID     The sessionID specified in the request parameters.
+     * @param hSessionID     The sessionID specified in the HTTP header.
+     * @param savingGoalID The savingGoalID of the SavingGoal that will be deleted.
+     * @return A ResponseEntity containing a HTTP status code and a status message.
+     */
+    @RequestMapping(method = RequestMethod.DELETE,
+            value = RestControllerConstants.URI_PREFIX + "/savingGoals/{savingGoalID}")
+    public ResponseEntity deleteSavingGoal(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                             @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                             @PathVariable String savingGoalID) {
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            long savingGoalIDLong = Long.parseLong(savingGoalID);
+            model.deleteSavingGoal(sessionID, savingGoalIDLong);
+            return ResponseEntity.status(204).body("Resource deleted");
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        } catch (NumberFormatException | ResourceNotFoundException e) {
+            return ResponseEntity.status(404).body("Resource not found");
+        }
+    }
 
 }
