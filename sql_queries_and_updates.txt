@@ -160,6 +160,13 @@ FROM Transaction_Table
 WHERE user_id = ?
 ORDER BY date ASC;
 
+    getNewestTransaction(user_id):
+SELECT transaction_id, date, amount, description, external_iban, type
+FROM Transaction_Table
+WHERE user_id = ?
+ORDER BY date DESC
+LIMIT 1;
+
 	increaseHighestSavingGoalID(user_id):
 UPDATE User_Table
 SET highest_saving_goal_id = highest_saving_goal_id + 1
