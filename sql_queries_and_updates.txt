@@ -182,18 +182,19 @@ INSERT INTO Saving_Goal (user_id, saving_goal_id, creation_date, name, goal, sav
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
 	getSavingGoal(user_id, saving_goal_id):
-SELECT saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required
+SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required
 FROM Saving_Goal
 WHERE user_id = ?
 AND saving_goal_id = ?;
 
-	deleteSavingGoal(user_id, saving_goal_id):
-DELETE FROM Saving_Goal
+	deleteSavingGoal(deletion_date, user_id, saving_goal_id):
+UPDATE Saving_Goal
+SET deletion_date = ?
 WHERE user_id = ?
 AND saving_goal_id = ?;
 
 	getSavingGoals(user_id):
-SELECT saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required
+SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required
 FROM Saving_Goal
 WHERE user_id = ?;
 

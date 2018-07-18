@@ -483,17 +483,40 @@ public class PersistentModel implements Model {
                 Transaction transaction = transactions.get(index);
                 for (int j = previousMonthIdentifier; j < transaction.getMonthIdentifier(); j++) {
                     // For every saving goal, check if money should be set apart
+                    ArrayList<SavingGoal> remainingSavingGoals = new ArrayList<>();
                     for (SavingGoal savingGoal : savingGoals) {
-                        if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() &&
-                                balance >= savingGoal.getMinBalanceRequired()) {
-                            // Set apart money and update balance accordingly
-                            float mutation = -savingGoal.setApart();
-                            balance += mutation;
-                            candlestick.mutation(mutation);
+                        float mutation = 0;
+                        if (savingGoal.getDeletionDate() != null &&
+                                IntervalHelper.isSmallerThan(savingGoal.getDeletionDate(), transaction.getDate())) {
+                            mutation = savingGoal.getBalance();
+                        } else {
+                            if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() &&
+                                    balance >= savingGoal.getMinBalanceRequired()) {
+                                // Set apart money and update balance accordingly
+                                mutation = -savingGoal.setApart();
+                            }
+                            remainingSavingGoals.add(savingGoal);
                         }
+                        balance += mutation;
+                        candlestick.mutation(mutation);
                     }
+                    savingGoals = remainingSavingGoals;
                 }
                 previousMonthIdentifier = transaction.getMonthIdentifier();
+
+                ArrayList<SavingGoal> remainingSavingGoals = new ArrayList<>();
+                for (SavingGoal savingGoal : savingGoals) {
+                    if (savingGoal.getDeletionDate() != null &&
+                            IntervalHelper.isSmallerThan(savingGoal.getDeletionDate(),
+                                    IntervalHelper.dateToString(endInterval))) {
+                        float mutation = savingGoal.getBalance();
+                        balance += mutation;
+                        candlestick.mutation(mutation);
+                    } else {
+                        remainingSavingGoals.add(savingGoal);
+                    }
+                }
+                savingGoals = remainingSavingGoals;
 
                 if (transaction.getType().equals("deposit")) {
                     candlestick.mutation(transaction.getAmount());
@@ -502,9 +525,6 @@ public class PersistentModel implements Model {
                 }
                 balance = candlestick.getClose();
                 index++;
-
-
-
             }
             candlesticks.add(candlestick);
         }
@@ -553,7 +573,14 @@ public class PersistentModel implements Model {
             }
         }
 
-        return savingGoals;
+        ArrayList<SavingGoal> returnedSavingGoals = new ArrayList<>();
+        for (SavingGoal savingGoal : savingGoals) {
+            if (savingGoal.getDeletionDate() == null) {
+                returnedSavingGoals.add(savingGoal);
+            }
+        }
+
+        return returnedSavingGoals;
     }
 
     /**
@@ -601,7 +628,16 @@ public class PersistentModel implements Model {
         int userID = this.getUserID(sessionID);
         SavingGoal savingGoal = customORM.getSavingGoal(userID, savingGoalID);
         if (savingGoal != null) {
-            customORM.deleteSavingGoal(userID, savingGoalID);
+            // Set deletion date to highest date Transaction if it exists, otherwise set to start of UNIX time
+            Transaction newestTransaction = customORM.getNewestTransaction(userID);
+            String deletionDate;
+            if (newestTransaction == null) {
+                deletionDate = "1970-01-01T00:00:00.000Z";
+            } else {
+                deletionDate = newestTransaction.getDate();
+            }
+
+            customORM.deleteSavingGoal(deletionDate, userID, savingGoalID);
         } else {
             throw new ResourceNotFoundException();
         }

@@ -13,6 +13,7 @@ public class SavingGoal {
 
     private long id;
     private String creationDate;
+    private String deletionDate;
     private String name;
     private float goal;
     private float savePerMonth;
@@ -27,10 +28,11 @@ public class SavingGoal {
 
     }
 
-    public SavingGoal(long id, String creationDate, String name, float goal,
+    public SavingGoal(long id, String creationDate, String deletionDate, String name, float goal,
                       float savePerMonth, float minBalanceRequired) {
         this.id = id;
         this.creationDate = creationDate;
+        this.deletionDate = deletionDate;
         this.name = name;
         this.goal = goal;
         this.savePerMonth = savePerMonth;
@@ -73,6 +75,26 @@ public class SavingGoal {
      */
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
+    }
+
+    /**
+     * Method used to retrieve the DeletionDate of SavingGoal.
+     * Ignored by the REST Controller.
+     *
+     * @return The DeletionDate of SavingGoal.
+     */
+    @JsonIgnore
+    public String getDeletionDate() {
+        return deletionDate;
+    }
+
+    /**
+     * Method used to update the DeletionDate of SavingGoal.
+     *
+     * @param deletionDate The new DeletionDate of SavingGoal.
+     */
+    public void setDeletionDate(String deletionDate) {
+        this.deletionDate = deletionDate;
     }
 
     /**

@@ -83,6 +83,22 @@ public class IntervalHelper {
     }
 
     /**
+     * Method used to check whether the date contained in a certain String object is smaller than the date
+     * contained in a certain String object.
+     *
+     * @param s1 The String object for which it will be checked if the contained date is smaller than the
+     *           contained date in s.
+     * @param s2 The String object for which it will be checked whether the contained date is bigger than or equal
+     *           to the contained date in date1.
+     * @return A boolean indicating whether the date contained in s1 is smaller than the date contained in s2.
+     */
+    public static boolean isSmallerThan(String s1, String s2) {
+        LocalDateTime date1 = LocalDateTime.parse(s1.split("Z")[0]);
+        LocalDateTime date2 = LocalDateTime.parse(s2.split("Z")[0]);
+        return date1.compareTo(date2) < 0;
+    }
+
+    /**
      * Method used to convert a date String object in the format that the DPA uses to a month identifier using the
      * following formula: (currentYear - 1970) * 12 + (monthValue - 1).
      * This method helps in figuring out how many months have elapsed between events (such as Transactions).

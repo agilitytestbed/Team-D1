@@ -176,16 +176,17 @@ public class CustomORM {
                     "save_per_month, min_balance_required)\n" +
                     "VALUES (?, ?, ?, ?, ?, ?, ?);";
     public static final String GET_SAVING_GOAL =
-            "SELECT saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required\n" +
+            "SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required\n" +
                     "FROM Saving_Goal\n" +
                     "WHERE user_id = ?\n" +
                     "AND saving_goal_id = ?;";
     public static final String DELETE_SAVING_GOAL =
-            "DELETE FROM Saving_Goal\n" +
+            "UPDATE Saving_Goal\n" +
+                    "SET deletion_date = ?\n" +
                     "WHERE user_id = ?\n" +
                     "AND saving_goal_id = ?;";
     public static final String GET_SAVING_GOALS =
-            "SELECT saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required\n" +
+            "SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required\n" +
                     "FROM Saving_Goal\n" +
                     "WHERE user_id = ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
@@ -946,11 +947,13 @@ public class CustomORM {
             if (resultSet.next()) {
                 savingGoalID = resultSet.getLong(1);
                 String creationDate = resultSet.getString(2);
-                String name = resultSet.getString(3);
-                float goal = resultSet.getFloat(4);
-                float savePerMonth = resultSet.getFloat(5);
-                float minBalanceRequired = resultSet.getFloat(6);
-                savingGoal = new SavingGoal(savingGoalID, creationDate, name, goal, savePerMonth, minBalanceRequired);
+                String deletionDate = resultSet.getString(3);
+                String name = resultSet.getString(4);
+                float goal = resultSet.getFloat(5);
+                float savePerMonth = resultSet.getFloat(6);
+                float minBalanceRequired = resultSet.getFloat(7);
+                savingGoal = new SavingGoal(savingGoalID, creationDate, deletionDate,
+                        name, goal, savePerMonth, minBalanceRequired);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -964,11 +967,12 @@ public class CustomORM {
      * @param userID       The ID of the user whose SavingGoal with savingGoalID will be deleted.
      * @param savingGoalID The ID of the to be deleted SavingGoal.
      */
-    public void deleteSavingGoal(int userID, long savingGoalID) {
+    public void deleteSavingGoal(String deletionDate, int userID, long savingGoalID) {
         try {
             PreparedStatement statement = connection.prepareStatement(DELETE_SAVING_GOAL);
-            statement.setInt(1, userID);
-            statement.setLong(2, savingGoalID);
+            statement.setString(1, deletionDate);
+            statement.setInt(2, userID);
+            statement.setLong(3, savingGoalID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -991,12 +995,13 @@ public class CustomORM {
             while (resultSet.next()) {
                 long savingGoalID = resultSet.getLong(1);
                 String creationDate = resultSet.getString(2);
-                String name = resultSet.getString(3);
-                float goal = resultSet.getFloat(4);
-                float savePerMonth = resultSet.getFloat(5);
-                float minBalanceRequired = resultSet.getFloat(6);
-                savingGoals.add(new SavingGoal(savingGoalID, creationDate, name, goal,
-                        savePerMonth, minBalanceRequired));
+                String deletionDate = resultSet.getString(3);
+                String name = resultSet.getString(4);
+                float goal = resultSet.getFloat(5);
+                float savePerMonth = resultSet.getFloat(6);
+                float minBalanceRequired = resultSet.getFloat(7);
+                savingGoals.add(new SavingGoal(savingGoalID, creationDate, deletionDate,
+                        name, goal, savePerMonth, minBalanceRequired));
             }
         } catch (SQLException e) {
             e.printStackTrace();

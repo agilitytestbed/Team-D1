@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS Saving_Goal(
   user_id INTEGER,
   saving_goal_id BIGINT,
   creation_date DATETIME,
+  deletion_date DATETIME,
   name TEXT,
   goal FLOAT,
   save_per_month FLOAT,

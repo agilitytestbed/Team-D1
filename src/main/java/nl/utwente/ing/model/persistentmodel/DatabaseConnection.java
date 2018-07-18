@@ -107,6 +107,7 @@ public class DatabaseConnection {
                     "  user_id INTEGER,\n" +
                     "  saving_goal_id BIGINT,\n" +
                     "  creation_date DATETIME,\n" +
+                    "  deletion_date DATETIME,\n" +
                     "  name TEXT,\n" +
                     "  goal FLOAT,\n" +
                     "  save_per_month FLOAT,\n" +
