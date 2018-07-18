@@ -567,6 +567,15 @@ public class PersistentModel implements Model {
             connection.commit();
             connection.setAutoCommit(true);
             savingGoal.setId(savingGoalID);
+
+            // Set creation date to highest date Transaction if it exists, otherwise set to start of UNIX time
+            Transaction newestTransaction = customORM.getNewestTransaction(userID);
+            if (newestTransaction == null) {
+                savingGoal.setCreationDate("1970-01-01T00:00:00.000");
+            } else {
+                savingGoal.setCreationDate(newestTransaction.getDate());
+            }
+
             customORM.createSavingGoal(userID, savingGoal);
             createdSavingGoal = customORM.getSavingGoal(userID, savingGoal.getId());
         } catch (SQLException e) {

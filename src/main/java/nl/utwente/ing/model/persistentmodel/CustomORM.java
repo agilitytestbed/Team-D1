@@ -157,6 +157,12 @@ public class CustomORM {
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "ORDER BY date ASC;";
+    public static final String GET_NEWEST_TRANSACTION =
+            "SELECT transaction_id, date, amount, description, external_iban, type\n" +
+                    "FROM Transaction_Table\n" +
+                    "WHERE user_id = ?\n" +
+                    "ORDER BY date DESC\n" +
+                    "LIMIT 1;";
     public static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
             "UPDATE User_Table\n" +
                     "SET highest_saving_goal_id = highest_saving_goal_id + 1\n" +
@@ -836,6 +842,35 @@ public class CustomORM {
             e.printStackTrace();
         }
         return transactions;
+    }
+
+    /**
+     * Method used to retrieve the Transaction with the highest date belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved Transaction belongs.
+     * @return The Transaction with the highest date if the user has any Transactions, otherwise null.
+     */
+    public Transaction getNewestTransaction(int userID) {
+        Transaction transaction = null;
+
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_NEWEST_TRANSACTION);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                long transactionID = resultSet.getLong(1);
+                String date = resultSet.getString(2);
+                float amount = resultSet.getFloat(3);
+                String description = resultSet.getString(4);
+                String externalIBAN = resultSet.getString(5);
+                String type = resultSet.getString(6);
+                transaction = new Transaction(transactionID, date, amount, description, externalIBAN, type);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return transaction;
     }
 
     /**
