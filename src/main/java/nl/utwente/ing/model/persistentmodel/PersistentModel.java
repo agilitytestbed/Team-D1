@@ -458,25 +458,70 @@ public class PersistentModel implements Model {
     public ArrayList<BalanceCandlestick> getBalanceHistory(String sessionID, IntervalPeriod intervalPeriod, int amount)
             throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
+
         LocalDateTime[] intervals = IntervalHelper.getIntervals(intervalPeriod, amount);
 
-        String startingDate = IntervalHelper.dateToString(intervals[0]);
-        float balance = customORM.getBalanceOnDate(userID, startingDate);
-        ArrayList<Transaction> transactions = customORM.getTransactionsAfterDate(userID, startingDate);
-
+        ArrayList<Transaction> transactions = customORM.getTransactionsAscending(userID);
+        ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);
         ArrayList<BalanceCandlestick> candlesticks = new ArrayList<>();
+
+        int previousMonthIdentifier = 0;
+        if (transactions.size() > 0) {
+            previousMonthIdentifier = transactions.get(0).getMonthIdentifier();
+        }
+
+        float balance = 0;
         int index = 0;
-        for (int i = 1; i <= amount; i++) {
+        for (int i = 1; i <= amount + 1; i++) {
             LocalDateTime startInterval = intervals[i - 1];
             LocalDateTime endInterval = intervals[i];
-            long startUnixTime =  startInterval.toEpochSecond(ZoneOffset.UTC); // Convert start of interval to UNIX time
+            long startUnixTime = startInterval.toEpochSecond(ZoneOffset.UTC); // Convert start of interval to UNIX time
             BalanceCandlestick candlestick = new BalanceCandlestick(balance, startUnixTime);
+
             while (index < transactions.size() &&
                     !IntervalHelper.isSmallerThan(endInterval, transactions.get(index).getDate())) {
-                if (transactions.get(index).getType().equals("deposit")) {
-                    candlestick.mutation(transactions.get(index).getAmount());
+                Transaction transaction = transactions.get(index);
+                for (int j = previousMonthIdentifier; j < transaction.getMonthIdentifier(); j++) {
+                    // For every saving goal, check if money should be set apart
+                    ArrayList<SavingGoal> remainingSavingGoals = new ArrayList<>();
+                    for (SavingGoal savingGoal : savingGoals) {
+                        float mutation = 0;
+                        if (savingGoal.getDeletionDate() != null &&
+                                IntervalHelper.isSmallerThan(savingGoal.getDeletionDate(), transaction.getDate())) {
+                            mutation = savingGoal.getBalance();
+                        } else {
+                            if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() &&
+                                    balance >= savingGoal.getMinBalanceRequired()) {
+                                // Set apart money and update balance accordingly
+                                mutation = -savingGoal.setApart();
+                            }
+                            remainingSavingGoals.add(savingGoal);
+                        }
+                        balance += mutation;
+                        candlestick.mutation(mutation);
+                    }
+                    savingGoals = remainingSavingGoals;
+                }
+                previousMonthIdentifier = transaction.getMonthIdentifier();
+
+                ArrayList<SavingGoal> remainingSavingGoals = new ArrayList<>();
+                for (SavingGoal savingGoal : savingGoals) {
+                    if (savingGoal.getDeletionDate() != null &&
+                            IntervalHelper.isSmallerThan(savingGoal.getDeletionDate(),
+                                    IntervalHelper.dateToString(endInterval))) {
+                        float mutation = savingGoal.getBalance();
+                        balance += mutation;
+                        candlestick.mutation(mutation);
+                    } else {
+                        remainingSavingGoals.add(savingGoal);
+                    }
+                }
+                savingGoals = remainingSavingGoals;
+
+                if (transaction.getType().equals("deposit")) {
+                    candlestick.mutation(transaction.getAmount());
                 } else {
-                    candlestick.mutation(transactions.get(index).getAmount() * (-1));
+                    candlestick.mutation(transaction.getAmount() * (-1));
                 }
                 balance = candlestick.getClose();
                 index++;
@@ -484,7 +529,118 @@ public class PersistentModel implements Model {
             candlesticks.add(candlestick);
         }
 
+        candlesticks.remove(0);
+
         return candlesticks;
+    }
+
+    /**
+     * Method used to retrieve the SavingGoals belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of SavingGoals belonging to the user with sessionID.
+     */
+    public ArrayList<SavingGoal> getSavingGoals(String sessionID) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);
+        ArrayList<Transaction> transactions = customORM.getTransactionsAscending(userID);
+
+        if (transactions.size() > 0) {
+            float balance = 0;
+            int previousMonthIdentifier = transactions.get(0).getMonthIdentifier();
+            for (Transaction transaction : transactions) {
+                // For every month elapsed since last transaction, check if money should be set apart
+                for (int i = previousMonthIdentifier; i < transaction.getMonthIdentifier(); i++) {
+                    // For every saving goal, check if money should be set apart
+                    for (SavingGoal savingGoal : savingGoals) {
+                        if (transaction.getMonthIdentifier() > savingGoal.getMonthIdentifier() &&
+                                balance >= savingGoal.getMinBalanceRequired()) {
+                            // Set apart money and update balance accordingly
+                            float mutation = -savingGoal.setApart();
+                            balance += mutation;
+                        }
+                    }
+                }
+                previousMonthIdentifier = transaction.getMonthIdentifier();
+
+                // Update balance according to transaction
+                float amount = transaction.getAmount();
+                if (transaction.getType().equals("deposit")) {
+                    balance += amount;
+                } else {
+                    balance -= amount;
+                }
+            }
+        }
+
+        ArrayList<SavingGoal> returnedSavingGoals = new ArrayList<>();
+        for (SavingGoal savingGoal : savingGoals) {
+            if (savingGoal.getDeletionDate() == null) {
+                returnedSavingGoals.add(savingGoal);
+            }
+        }
+
+        return returnedSavingGoals;
+    }
+
+    /**
+     * Method used to create a new SavingGoal for a certain user.
+     *
+     * @param sessionID  The sessionID of the user.
+     * @param savingGoal The SavingGoal object to be used to create the new SavingGoal.
+     * @return The SavingGoal created by this method.
+     */
+    public SavingGoal postSavingGoal(String sessionID, SavingGoal savingGoal) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        SavingGoal createdSavingGoal = null;
+        try {
+            connection.setAutoCommit(false);
+            customORM.increaseHighestSavingGoalID(userID);
+            long savingGoalID = customORM.getHighestSavingGoalID(userID);
+            connection.commit();
+            connection.setAutoCommit(true);
+            savingGoal.setId(savingGoalID);
+
+            // Set creation date to highest date Transaction if it exists, otherwise set to start of UNIX time
+            Transaction newestTransaction = customORM.getNewestTransaction(userID);
+            if (newestTransaction == null) {
+                savingGoal.setCreationDate("1970-01-01T00:00:00.000Z");
+            } else {
+                savingGoal.setCreationDate(newestTransaction.getDate());
+            }
+
+            customORM.createSavingGoal(userID, savingGoal);
+            createdSavingGoal = customORM.getSavingGoal(userID, savingGoal.getId());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return createdSavingGoal;
+    }
+
+    /**
+     * Method used to remove a certain SavingGoal of a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param savingGoalID The savingGoalID of the SavingGoal that will be deleted.
+     */
+    public void deleteSavingGoal(String sessionID, long savingGoalID)
+            throws InvalidSessionIDException, ResourceNotFoundException {
+        int userID = this.getUserID(sessionID);
+        SavingGoal savingGoal = customORM.getSavingGoal(userID, savingGoalID);
+        if (savingGoal != null) {
+            // Set deletion date to highest date Transaction if it exists, otherwise set to start of UNIX time
+            Transaction newestTransaction = customORM.getNewestTransaction(userID);
+            String deletionDate;
+            if (newestTransaction == null) {
+                deletionDate = "1970-01-01T00:00:00.000Z";
+            } else {
+                deletionDate = newestTransaction.getDate();
+            }
+
+            customORM.deleteSavingGoal(deletionDate, userID, savingGoalID);
+        } else {
+            throw new ResourceNotFoundException();
+        }
     }
 
     /**
@@ -505,7 +661,6 @@ public class PersistentModel implements Model {
      *
      * @param sessionID The sessionID from which the belonging userID will be retrieved.
      * @return The userID belonging to sessionID.
-     * @throws InvalidSessionIDException
      */
     private int getUserID(String sessionID) throws InvalidSessionIDException {
         int userID = customORM.getUserID(sessionID);

@@ -206,4 +206,30 @@ public interface Model {
     ArrayList<BalanceCandlestick> getBalanceHistory(String sessionID, IntervalPeriod intervalPeriod, int amount)
             throws InvalidSessionIDException;
 
+    /**
+     * Method used to retrieve the SavingGoals belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of SavingGoals belonging to the user with sessionID.
+     */
+    ArrayList<SavingGoal> getSavingGoals(String sessionID) throws InvalidSessionIDException;
+
+    /**
+     * Method used to create a new SavingGoal for a certain user.
+     *
+     * @param sessionID  The sessionID of the user.
+     * @param savingGoal The SavingGoal object to be used to create the new SavingGoal.
+     * @return The SavingGoal created by this method.
+     */
+    SavingGoal postSavingGoal(String sessionID, SavingGoal savingGoal) throws InvalidSessionIDException;
+
+    /**
+     * Method used to remove a certain SavingGoal of a certain user.
+     *
+     * @param sessionID    The sessionID of the user.
+     * @param savingGoalID The savingGoalID of the SavingGoal that will be deleted.
+     */
+    void deleteSavingGoal(String sessionID, long savingGoalID)
+            throws InvalidSessionIDException, ResourceNotFoundException;
+
 }

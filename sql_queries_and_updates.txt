@@ -154,26 +154,49 @@ AND description LIKE ?
 AND external_iban LIKE ?
 AND type LIKE ?;
 
-    getDepositsOnDate(user_id, date):
-SELECT SUM(amount)
-FROM Transaction_Table
-WHERE user_id = ?
-AND date <= ?
-AND type = 'deposit';
-
-    getWithdrawalsOnDate(user_id, date):
-SELECT SUM(amount)
-FROM Transaction_Table
-WHERE user_id = ?
-AND date <= ?
-AND type = 'withdrawal';
-
-    getTransactionsAfterDate(user_id, date):
+    getTransactionsAscending(user_id):
 SELECT transaction_id, date, amount, description, external_iban, type
 FROM Transaction_Table
 WHERE user_id = ?
-AND date > ?
 ORDER BY date ASC;
+
+    getNewestTransaction(user_id):
+SELECT transaction_id, date, amount, description, external_iban, type
+FROM Transaction_Table
+WHERE user_id = ?
+ORDER BY date DESC
+LIMIT 1;
+
+	increaseHighestSavingGoalID(user_id):
+UPDATE User_Table
+SET highest_saving_goal_id = highest_saving_goal_id + 1
+WHERE user_id = ?;
+
+	getHighestSavingGoalID(user_id):
+SELECT highest_saving_goal_id
+FROM User_Table
+WHERE user_id = ?;
+
+	createSavingGoal(user_id, saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required):
+INSERT INTO Saving_Goal (user_id, saving_goal_id, creation_date, name, goal, save_per_month, min_balance_required)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+	getSavingGoal(user_id, saving_goal_id):
+SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required
+FROM Saving_Goal
+WHERE user_id = ?
+AND saving_goal_id = ?;
+
+	deleteSavingGoal(deletion_date, user_id, saving_goal_id):
+UPDATE Saving_Goal
+SET deletion_date = ?
+WHERE user_id = ?
+AND saving_goal_id = ?;
+
+	getSavingGoals(user_id):
+SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required
+FROM Saving_Goal
+WHERE user_id = ?;
 
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
@@ -204,8 +227,8 @@ AND t.user_id = ?
 AND t.transaction_id = ?;
 
 	createNewUser(session_id):
-INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id)
-VALUES (?, 0, 0, 0);
+INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id)
+VALUES (?, 0, 0, 0, 0);
 
 	getUserID(session_id):
 SELECT user_id
