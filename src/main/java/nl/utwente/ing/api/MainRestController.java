@@ -635,8 +635,7 @@ public class MainRestController {
     public ResponseEntity postSavingGoal(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
                                            @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                            @RequestBody SavingGoal sg) {
-        if (sg == null || sg.getName() == null || sg.getGoal() < 0 || sg.getSavePerMonth() < 0 ||
-                sg.getMinBalanceRequired() < 0) {
+        if (sg == null || sg.getName() == null || sg.getGoal() < 0 || sg.getSavePerMonth() < 0) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
         try {
