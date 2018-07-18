@@ -571,7 +571,7 @@ public class PersistentModel implements Model {
             // Set creation date to highest date Transaction if it exists, otherwise set to start of UNIX time
             Transaction newestTransaction = customORM.getNewestTransaction(userID);
             if (newestTransaction == null) {
-                savingGoal.setCreationDate("1970-01-01T00:00:00.000");
+                savingGoal.setCreationDate("1970-01-01T00:00:00.000Z");
             } else {
                 savingGoal.setCreationDate(newestTransaction.getDate());
             }
