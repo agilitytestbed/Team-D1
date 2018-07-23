@@ -602,12 +602,7 @@ public class PersistentModel implements Model {
             savingGoal.setId(savingGoalID);
 
             // Set creation date to highest date Transaction if it exists, otherwise set to start of UNIX time
-            Transaction newestTransaction = customORM.getNewestTransaction(userID);
-            if (newestTransaction == null) {
-                savingGoal.setCreationDate("1970-01-01T00:00:00.000Z");
-            } else {
-                savingGoal.setCreationDate(newestTransaction.getDate());
-            }
+            savingGoal.setCreationDate(customORM.getCurrentDate(userID));
 
             customORM.createSavingGoal(userID, savingGoal);
             createdSavingGoal = customORM.getSavingGoal(userID, savingGoal.getId());
@@ -629,13 +624,7 @@ public class PersistentModel implements Model {
         SavingGoal savingGoal = customORM.getSavingGoal(userID, savingGoalID);
         if (savingGoal != null) {
             // Set deletion date to highest date Transaction if it exists, otherwise set to start of UNIX time
-            Transaction newestTransaction = customORM.getNewestTransaction(userID);
-            String deletionDate;
-            if (newestTransaction == null) {
-                deletionDate = "1970-01-01T00:00:00.000Z";
-            } else {
-                deletionDate = newestTransaction.getDate();
-            }
+            String deletionDate = customORM.getCurrentDate(userID);
 
             customORM.deleteSavingGoal(deletionDate, userID, savingGoalID);
         } else {

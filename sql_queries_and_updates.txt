@@ -160,8 +160,8 @@ FROM Transaction_Table
 WHERE user_id = ?
 ORDER BY date ASC;
 
-    getNewestTransaction(user_id):
-SELECT transaction_id, date, amount, description, external_iban, type
+    getCurrentDate(user_id):
+SELECT date
 FROM Transaction_Table
 WHERE user_id = ?
 ORDER BY date DESC

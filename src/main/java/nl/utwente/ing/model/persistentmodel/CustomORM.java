@@ -157,12 +157,12 @@ public class CustomORM {
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "ORDER BY date ASC;";
-    public static final String GET_NEWEST_TRANSACTION =
-            "SELECT transaction_id, date, amount, description, external_iban, type\n" +
+    public static final String GET_CURRENT_DATE =
+            "SELECT date\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "ORDER BY date DESC\n" +
-                    "LIMIT 1;";
+                    "LIMIT 1";
     public static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
             "UPDATE User_Table\n" +
                     "SET highest_saving_goal_id = highest_saving_goal_id + 1\n" +
@@ -846,32 +846,27 @@ public class CustomORM {
     }
 
     /**
-     * Method used to retrieve the Transaction with the highest date belonging to a certain user from the database.
+     * Method used to retrieve the highest date belonging to a Transaction of a certain user from the database.
      *
-     * @param userID The ID of the user to who the to be retrieved Transaction belongs.
-     * @return The Transaction with the highest date if the user has any Transactions, otherwise null.
+     * @param userID The ID of the user to who the to be retrieved Transaction date belongs.
+     * @return A String object containing the highest Transaction date if the user has any Transactions, otherwise a
+     * String object containing the start of UNIX time.
      */
-    public Transaction getNewestTransaction(int userID) {
-        Transaction transaction = null;
+    public String getCurrentDate(int userID) {
+        String date = "1970-01-01T00:00:00.000Z";
 
         try {
-            PreparedStatement statement = connection.prepareStatement(GET_NEWEST_TRANSACTION);
+            PreparedStatement statement = connection.prepareStatement(GET_CURRENT_DATE);
             statement.setInt(1, userID);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                long transactionID = resultSet.getLong(1);
-                String date = resultSet.getString(2);
-                float amount = resultSet.getFloat(3);
-                String description = resultSet.getString(4);
-                String externalIBAN = resultSet.getString(5);
-                String type = resultSet.getString(6);
-                transaction = new Transaction(transactionID, date, amount, description, externalIBAN, type);
+                date = resultSet.getString(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return transaction;
+        return date;
     }
 
     /**
