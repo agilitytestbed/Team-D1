@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -126,6 +127,25 @@ public class PersistentModel implements Model {
                 }
             }
             this.populateCategory(userID, transaction);
+
+            if (transaction.getType().equals("deposit")) {
+                // Check if Transaction answers some Payment Request
+                List<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
+                connection.setAutoCommit(false);
+                for (PaymentRequest paymentRequest : paymentRequests) {
+                    if (!paymentRequest.getFilled() && transaction.getAmount() == paymentRequest.getAmount()) {
+                        long paymentRequestID = paymentRequest.getID();
+                        customORM.linkTransactionToPaymentRequest(userID, transactionID, paymentRequestID);
+                        long numberAnswered = customORM.getTransactionsByPaymentRequest(userID, paymentRequestID).size();
+                        if (numberAnswered >= paymentRequest.getNumber_of_requests()) {
+                            customORM.setPaymentRequestFilled(userID, paymentRequestID);
+                        }
+                        break;
+                    }
+                }
+                connection.commit();
+                connection.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
