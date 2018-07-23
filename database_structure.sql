@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS Payment_Request(
   due_date DATETIME,
   amount FLOAT,
   number_of_requests BIGINT,
+  filled BOOL,
   FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
   PRIMARY KEY(user_id, payment_request_id)
 );

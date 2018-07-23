@@ -123,6 +123,7 @@ public class DatabaseConnection {
                     "  due_date DATETIME,\n" +
                     "  amount FLOAT,\n" +
                     "  number_of_requests BIGINT,\n" +
+                    "  filled BOOL,\n" +
                     "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
                     "  PRIMARY KEY(user_id, payment_request_id)\n" +
                     ");");
