@@ -633,6 +633,60 @@ public class PersistentModel implements Model {
     }
 
     /**
+     * Method used to retrieve the PaymentRequests belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of PaymentRequest belonging to the user with sessionID.
+     */
+    public ArrayList<PaymentRequest> getPaymentRequests(String sessionID) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        ArrayList<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
+        for (PaymentRequest paymentRequest : paymentRequests) {
+            ArrayList<Transaction> transactions = customORM.getTransactionsByPaymentRequest(userID, paymentRequest.getID());
+            paymentRequest.setTransactions(transactions);
+            for (Transaction transaction : transactions) {
+                this.populateCategory(userID, transaction);
+            }
+        }
+
+        return paymentRequests;
+    }
+
+    /**
+     * Method used to create a new PaymentRequest for a certain user.
+     *
+     * @param sessionID  The sessionID of the user.
+     * @param paymentRequest The PaymentRequest object to be used to create the new PaymentRequest.
+     * @return The PaymentRequest created by this method.
+     */
+    public PaymentRequest postPaymentRequest(String sessionID, PaymentRequest paymentRequest)
+            throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        PaymentRequest createdPaymentRequest = null;
+        try {
+            connection.setAutoCommit(false);
+            customORM.increaseHighestPaymentRequestID(userID);
+            long paymentRequestID = customORM.getHighestPaymentRequestID(userID);
+            connection.commit();
+            connection.setAutoCommit(true);
+            paymentRequest.setID(paymentRequestID);
+
+            // Set filled to true if number_of_request == 0, otherwise false.
+            if (paymentRequest.getNumber_of_requests() == 0) {
+                paymentRequest.setFilled(true);
+            } else {
+                paymentRequest.setFilled(false);
+            }
+
+            customORM.createPaymentRequest(userID, paymentRequest);
+            createdPaymentRequest = customORM.getPaymentRequest(userID, paymentRequest.getID());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return createdPaymentRequest;
+    }
+
+    /**
      * Method used to populate a Transaction object with a Category object.
      *
      * @param transaction The Transaction object that will be populated by a Category object.
