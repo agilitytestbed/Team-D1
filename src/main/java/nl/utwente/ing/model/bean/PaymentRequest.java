@@ -14,7 +14,7 @@ public class PaymentRequest {
     private String description;
     private String due_date;
     private float amount;
-    private int number_of_requests;
+    private long number_of_requests;
     private boolean filled;
     private List<Transaction> transactions;
 
@@ -37,7 +37,7 @@ public class PaymentRequest {
      * @param filled             The boolean indicating whether the to be created PaymentRequest is already filled.
      */
     public PaymentRequest(long id, String description, String due_date,
-                          float amount, int number_of_requests, boolean filled) {
+                          float amount, long number_of_requests, boolean filled) {
         this.id = id;
         this.description = description;
         this.due_date = due_date;
@@ -123,7 +123,7 @@ public class PaymentRequest {
      *
      * @return The number of requests of PaymentRequest.
      */
-    public int getNumber_of_requests() {
+    public long getNumber_of_requests() {
         return number_of_requests;
     }
 
@@ -132,7 +132,7 @@ public class PaymentRequest {
      *
      * @param number_of_requests The new number of requests of PaymentRequest.
      */
-    public void setNumber_of_requests(int number_of_requests) {
+    public void setNumber_of_requests(long number_of_requests) {
         this.number_of_requests = number_of_requests;
     }
 
