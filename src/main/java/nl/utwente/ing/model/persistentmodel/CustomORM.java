@@ -1,9 +1,6 @@
 package nl.utwente.ing.model.persistentmodel;
 
-import nl.utwente.ing.model.bean.Category;
-import nl.utwente.ing.model.bean.CategoryRule;
-import nl.utwente.ing.model.bean.SavingGoal;
-import nl.utwente.ing.model.bean.Transaction;
+import nl.utwente.ing.model.bean.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -189,6 +186,44 @@ public class CustomORM {
             "SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required\n" +
                     "FROM Saving_Goal\n" +
                     "WHERE user_id = ?;";
+    public static final String INCREASE_HIGHEST_PAYMENT_REQUEST_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_payment_request_id = highest_payment_request_id + 1\n" +
+                    "WHERE user_id = ?;";
+    public static final String GET_HIGHEST_PAYMENT_REQUEST_ID =
+            "SELECT highest_payment_request_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    public static final String CREATE_PAYMENT_REQUEST =
+            "INSERT INTO Payment_Request (user_id, payment_request_id, description, due_date, " +
+                    "amount, number_of_requests, filled)\n" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?);\n";
+    public static final String GET_PAYMENT_REQUEST =
+            "SELECT payment_request_id, description, due_date, amount, number_of_requests, filled\n" +
+                    "FROM Payment_Request\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND payment_request_id = ?;";
+    public static final String GET_PAYMENT_REQUESTS =
+            "SELECT payment_request_id, description, due_date, amount, number_of_requests, filled\n" +
+                    "FROM Payment_Request\n" +
+                    "WHERE user_id = ?;";
+    public static final String SET_PAYMENT_REQUEST_FILLED =
+            "UPDATE Payment_Request\n" +
+                    "SET filled = 1\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND payment_request_id = ?;";
+    public static final String GET_TRANSACTIONS_BY_PAYMENT_REQUEST =
+            "SELECT t.transaction_id, t.date, t.amount, t.description, t.external_iban, t.type\n" +
+                    "FROM Payment_Request pr, Payment_Request_Transaction prt, Transaction_Table t\n" +
+                    "WHERE pr.payment_request_id = prt.payment_request_id\n" +
+                    "AND prt.transaction_id = t.transaction_id\n" +
+                    "AND pr.user_id = prt.user_id\n" +
+                    "AND prt.user_id = t.user_id\n" +
+                    "AND t.user_id = ?\n" +
+                    "AND pr.payment_request_id = ?;";
+    public static final String LINK_TRANSACTION_TO_PAYMENT_REQUEST =
+            "INSERT INTO Payment_Request_Transaction (user_id, transaction_id, payment_request_id)\n" +
+                    "VALUES (?, ?, ?);";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -1002,6 +1037,187 @@ public class CustomORM {
             e.printStackTrace();
         }
         return savingGoals;
+    }
+
+    /**
+     * Method used to increase the highestPaymentRequestID field of a certain user by one in the database.
+     *
+     * @param userID The ID of the user whose highestPaymentRequestID field should be increased.
+     */
+    public void increaseHighestPaymentRequestID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_PAYMENT_REQUEST_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestPaymentRequestID field of a certain user from the database.
+     *
+     * @param userID The ID of the user whose highestPaymentRequestID field should be retrieved.
+     * @return The value of the highestPaymentRequestID field of the user with userID.
+     */
+    public long getHighestPaymentRequestID(int userID) {
+        long highestPaymentRequestID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_PAYMENT_REQUEST_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestPaymentRequestID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestPaymentRequestID;
+    }
+
+    /**
+     * Method used to insert a PaymentRequest into the database.
+     *
+     * @param userID     The ID of the user to which this new PaymentRequest will belong.
+     * @param paymentRequest The PaymentRequest object to be inserted into the database.
+     */
+    public void createPaymentRequest(int userID, PaymentRequest paymentRequest) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_PAYMENT_REQUEST);
+            statement.setInt(1, userID);
+            statement.setLong(2, paymentRequest.getID());
+            statement.setString(3, paymentRequest.getDescription());
+            statement.setString(4, paymentRequest.getDue_date());
+            statement.setFloat(5, paymentRequest.getAmount());
+            statement.setLong(6, paymentRequest.getNumber_of_requests());
+            statement.setBoolean(7, paymentRequest.getFilled());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a PaymentRequest from the database.
+     *
+     * @param userID       The id of the user from which a PaymentRequest should be retrieved.
+     * @param paymentRequestID The id of the to be retrieved PaymentRequest.
+     * @return A PaymentRequest object containing data retrieved from the database.
+     */
+    public PaymentRequest getPaymentRequest(int userID, long paymentRequestID) {
+        PaymentRequest paymentRequest = null;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_PAYMENT_REQUEST);
+            statement.setInt(1, userID);
+            statement.setLong(2, paymentRequestID);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                paymentRequestID = resultSet.getLong(1);
+                String description = resultSet.getString(2);
+                String dueDate = resultSet.getString(3);
+                float amount = resultSet.getFloat(4);
+                long numberOfRequests = resultSet.getLong(5);
+                boolean filled = resultSet.getBoolean(6);
+                paymentRequest = new PaymentRequest(paymentRequestID, description, dueDate,
+                        amount, numberOfRequests, filled);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return paymentRequest;
+    }
+
+    /**
+     * Method used to retrieve a batch of PaymentRequest objects belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved PaymentRequest objects belong.
+     * @return An ArrayList of PaymentRequest objects.
+     */
+    public ArrayList<PaymentRequest> getPaymentRequest(int userID) {
+        ArrayList<PaymentRequest> paymentRequests = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_PAYMENT_REQUESTS);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                long paymentRequestID = resultSet.getLong(1);
+                String description = resultSet.getString(2);
+                String dueDate = resultSet.getString(3);
+                float amount = resultSet.getFloat(4);
+                long numberOfRequests = resultSet.getLong(5);
+                boolean filled = resultSet.getBoolean(6);
+                paymentRequests.add(new PaymentRequest(paymentRequestID, description, dueDate,
+                        amount, numberOfRequests, filled));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return paymentRequests;
+    }
+
+    /**
+     * Method used to indicate that a certain PaymentRequest of a certain user has been filled.
+     *
+     * @param userID The ID of the user to which the certain PaymentRequest belongs.
+     * @param paymentRequestID The ID of the PaymentRequest for which it should be indicated that it is filled.
+     */
+    public void setPaymentRequestFilled(int userID, long paymentRequestID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(SET_PAYMENT_REQUEST_FILLED);
+            statement.setInt(1, userID);
+            statement.setLong(2, paymentRequestID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a batch of Transaction objects belonging to a certain user
+     * and fulfilling a certain PaymentRequest from the database.
+     *
+     * @param userID       The id of the user to who the to be retrieved Transaction objects belong.
+     * @param paymentRequestID The ID of the PaymentRequest to which the retrieved Transaction objects belong.
+     * @return An ArrayList of Transaction objects.
+     */
+    public ArrayList<Transaction> getTransactionsByPaymentRequest(int userID, long paymentRequestID) {
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_TRANSACTIONS_BY_PAYMENT_REQUEST);
+            statement.setInt(1, userID);
+            statement.setLong(2, paymentRequestID);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                long transactionID = resultSet.getLong(1);
+                String date = resultSet.getString(2);
+                float amount = resultSet.getFloat(3);
+                String description = resultSet.getString(4);
+                String externalIBAN = resultSet.getString(5);
+                String type = resultSet.getString(6);
+                transactions.add(new Transaction(transactionID, date, amount, description, externalIBAN, type));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
+    }
+
+    /**
+     * Method used to link a Transaction to a PaymentRequest in the database.
+     *
+     * @param userID        The ID of the user to who the to be linked Transaction and PaymentRequest objects belong.
+     * @param transactionID The ID of the Transaction that will be linked to a PaymentRequest.
+     * @param paymentRequestID    The ID of the PaymentRequest that will be linked to a Transaction.
+     */
+    public void linkTransactionToPaymentRequest(int userID, long transactionID, long paymentRequestID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(LINK_TRANSACTION_TO_PAYMENT_REQUEST);
+            statement.setInt(1, userID);
+            statement.setLong(2, transactionID);
+            statement.setLong(3, paymentRequestID);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

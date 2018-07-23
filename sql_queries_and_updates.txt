@@ -198,6 +198,51 @@ SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month,
 FROM Saving_Goal
 WHERE user_id = ?;
 
+	increaseHighestPaymentRequestID(user_id):
+UPDATE User_Table
+SET highest_payment_request_id = highest_payment_request_id + 1
+WHERE user_id = ?;
+
+	getHighestPaymentRequestID(user_id):
+SELECT highest_payment_request_id
+FROM User_Table
+WHERE user_id = ?;
+
+    createPaymentRequest(user_id, payment_request_id, description, due_date, amount, number_of_requests, filled):
+INSERT INTO Payment_Request (user_id, payment_request_id, description, due_date, amount, number_of_requests, filled)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+    getPaymentRequest(user_id, payment_request_id):
+SELECT payment_request_id, description, due_date, amount, number_of_requests, filled
+FROM Payment_Request
+WHERE user_id = ?
+AND payment_request_id = ?;
+
+    getPaymentRequests(user_id):
+SELECT payment_request_id, description, due_date, amount, number_of_requests, filled
+FROM Payment_Request
+WHERE user_id = ?;
+
+    setPaymentRequestFilled(user_id, payment_request_id):
+UPDATE Payment_Request
+SET filled = 1
+WHERE user_id = ?
+AND payment_request_id = ?;
+
+    getTransactionsByPaymentRequest(user_id, payment_request_id):
+SELECT t.transaction_id, t.date, t.amount, t.description, t.external_iban, t.type
+FROM Payment_Request pr, Payment_Request_Transaction prt, Transaction_Table t
+WHERE pr.payment_request_id = prt.payment_request_id
+AND prt.transaction_id = t.transaction_id
+AND pr.user_id = prt.user_id
+AND prt.user_id = t.user_id
+AND t.user_id = ?
+AND pr.payment_request_id = ?;
+
+    linkTransactionToPaymentRequest(user_id, transaction_id, payment_request_id):
+INSERT INTO Payment_Request_Transaction (user_id, transaction_id, payment_request_id)
+VALUES (?, ?, ?);
+
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
 VALUES (?, ?, ?);
