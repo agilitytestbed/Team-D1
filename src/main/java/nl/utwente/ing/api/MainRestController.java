@@ -611,7 +611,7 @@ public class MainRestController {
     @RequestMapping(method = RequestMethod.GET,
             value = RestControllerConstants.URI_PREFIX + "/savingGoals")
     public ResponseEntity getSavingGoals(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
-                                           @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID) {
+                                         @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
             ArrayList<SavingGoal> savingGoals = model.getSavingGoals(sessionID);
@@ -633,8 +633,8 @@ public class MainRestController {
     @RequestMapping(method = RequestMethod.POST,
             value = RestControllerConstants.URI_PREFIX + "/savingGoals")
     public ResponseEntity postSavingGoal(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
-                                           @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
-                                           @RequestBody SavingGoal sg) {
+                                         @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                         @RequestBody SavingGoal sg) {
         if (sg == null || sg.getName() == null || sg.getGoal() < 0 || sg.getSavePerMonth() < 0) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
@@ -650,16 +650,16 @@ public class MainRestController {
     /**
      * Method used to remove a certain SavingGoal belonging to the user issuing the current request.
      *
-     * @param pSessionID     The sessionID specified in the request parameters.
-     * @param hSessionID     The sessionID specified in the HTTP header.
+     * @param pSessionID   The sessionID specified in the request parameters.
+     * @param hSessionID   The sessionID specified in the HTTP header.
      * @param savingGoalID The savingGoalID of the SavingGoal that will be deleted.
      * @return A ResponseEntity containing a HTTP status code and a status message.
      */
     @RequestMapping(method = RequestMethod.DELETE,
             value = RestControllerConstants.URI_PREFIX + "/savingGoals/{savingGoalID}")
     public ResponseEntity deleteSavingGoal(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
-                                             @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
-                                             @PathVariable String savingGoalID) {
+                                           @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                           @PathVariable String savingGoalID) {
         try {
             String sessionID = this.getSessionID(pSessionID, hSessionID);
             long savingGoalIDLong = Long.parseLong(savingGoalID);
@@ -669,6 +669,54 @@ public class MainRestController {
             return ResponseEntity.status(401).body("Session ID is missing or invalid");
         } catch (NumberFormatException | ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Resource not found");
+        }
+    }
+
+    /**
+     * Method used to retrieve the PaymentRequests belonging to the user issuing the current request.
+     *
+     * @param pSessionID The sessionID specified in the request parameters.
+     * @param hSessionID The sessionID specified in the HTTP header.
+     * @return A ResponseEntity containing a HTTP status code and either a status message or
+     * an ArrayList of PaymentRequests belonging to the user issuing the current request.
+     */
+    @RequestMapping(method = RequestMethod.GET,
+            value = RestControllerConstants.URI_PREFIX + "/paymentRequests")
+    public ResponseEntity getPaymentRequests(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                             @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID) {
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            ArrayList<PaymentRequest> paymentRequests = model.getPaymentRequests(sessionID);
+            return ResponseEntity.status(200).body(paymentRequests);
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        }
+    }
+
+    /**
+     * Method used to create a new PaymentRequest for the user issuing the current request.
+     *
+     * @param pSessionID The sessionID specified in the request parameters.
+     * @param hSessionID The sessionID specified in the HTTP header.
+     * @param pr         The PaymentRequest object as specified in the json HTTP body.
+     * @return A ResponseEntity containing a HTTP status code and either a status message or
+     * the PaymentRequest created by using this method.
+     */
+    @RequestMapping(method = RequestMethod.POST,
+            value = RestControllerConstants.URI_PREFIX + "/paymentRequests")
+    public ResponseEntity postPaymentRequest(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                             @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                             @RequestBody PaymentRequest pr) {
+        if (pr == null || pr.getDescription() == null || pr.getDue_date() == null ||
+                pr.getAmount() < 0 || pr.getNumber_of_requests() < 0) {
+            return ResponseEntity.status(405).body("Invalid input given");
+        }
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            PaymentRequest paymentRequest = model.postPaymentRequest(sessionID, pr);
+            return ResponseEntity.status(201).body(paymentRequest);
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
         }
     }
 
