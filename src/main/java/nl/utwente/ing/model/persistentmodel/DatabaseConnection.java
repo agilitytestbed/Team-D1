@@ -53,7 +53,8 @@ public class DatabaseConnection {
                             "  highest_transaction_id BIGINT,\n" +
                             "  highest_category_id BIGINT,\n" +
                             "  highest_category_rule_id BIGINT,\n" +
-                            "  highest_saving_goal_id BIGINT\n" +
+                            "  highest_saving_goal_id BIGINT,\n" +
+                            "  highest_payment_request_id BIGINT\n" +
                             ");"
             );
             statement.executeUpdate(
@@ -114,6 +115,25 @@ public class DatabaseConnection {
                     "  min_balance_required FLOAT,\n" +
                     "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
                     "  PRIMARY KEY(user_id, saving_goal_id)\n" +
+                    ");");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Payment_Request(\n" +
+                    "  user_id INTEGER,\n" +
+                    "  payment_request_id BIGINT,\n" +
+                    "  description TEXT,\n" +
+                    "  due_date DATETIME,\n" +
+                    "  amount FLOAT,\n" +
+                    "  number_of_requests BIGINT,\n" +
+                    "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                    "  PRIMARY KEY(user_id, payment_request_id)\n" +
+                    ");");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Payment_Request_Transaction(\n" +
+                    "  user_id INTEGER,\n" +
+                    "  payment_request_id BIGINT,\n" +
+                    "  transaction_id BIGINT,\n" +
+                    "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                    "  FOREIGN KEY(payment_request_id) REFERENCES Payment_Request(payment_request_id),\n" +
+                    "  FOREIGN KEY(transaction_id) REFERENCES Transaction_Table(transaction_id),\n" +
+                    "  PRIMARY KEY(user_id, payment_request_id, transaction_id)\n" +
                     ");");
             statement.close();
             connection.setAutoCommit(true);
