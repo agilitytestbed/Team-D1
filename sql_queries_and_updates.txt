@@ -272,8 +272,8 @@ AND t.user_id = ?
 AND t.transaction_id = ?;
 
 	createNewUser(session_id):
-INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id)
-VALUES (?, 0, 0, 0, 0);
+INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id)
+VALUES (?, 0, 0, 0, 0, 0);
 
 	getUserID(session_id):
 SELECT user_id

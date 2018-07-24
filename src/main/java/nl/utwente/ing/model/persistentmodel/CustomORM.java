@@ -249,8 +249,8 @@ public class CustomORM {
                     "AND t.transaction_id = ?;";
     private static final String CREATE_NEW_USER =
             "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, " +
-                    "highest_category_rule_id, highest_saving_goal_id)\n" +
-                    "VALUES (?, 0, 0, 0, 0);";
+                    "highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id)\n" +
+                    "VALUES (?, 0, 0, 0, 0, 0);";
     private static final String GET_USER_ID =
             "SELECT user_id\n" +
                     "FROM User_Table\n" +
