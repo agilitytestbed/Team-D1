@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -126,6 +127,26 @@ public class PersistentModel implements Model {
                 }
             }
             this.populateCategory(userID, transaction);
+
+            if (transaction.getType().equals("deposit")) {
+                // Check if Transaction answers some Payment Request
+                List<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
+                connection.setAutoCommit(false);
+                for (PaymentRequest paymentRequest : paymentRequests) {
+                    if (!paymentRequest.getFilled() && transaction.getAmount() == paymentRequest.getAmount() &&
+                            IntervalHelper.isSmallerThan(transaction.getDate(), paymentRequest.getDue_date())) {
+                        long paymentRequestID = paymentRequest.getID();
+                        customORM.linkTransactionToPaymentRequest(userID, transactionID, paymentRequestID);
+                        long numberAnswered = customORM.getTransactionsByPaymentRequest(userID, paymentRequestID).size();
+                        if (numberAnswered >= paymentRequest.getNumber_of_requests()) {
+                            customORM.setPaymentRequestFilled(userID, paymentRequestID);
+                        }
+                        break;
+                    }
+                }
+                connection.commit();
+                connection.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -602,12 +623,7 @@ public class PersistentModel implements Model {
             savingGoal.setId(savingGoalID);
 
             // Set creation date to highest date Transaction if it exists, otherwise set to start of UNIX time
-            Transaction newestTransaction = customORM.getNewestTransaction(userID);
-            if (newestTransaction == null) {
-                savingGoal.setCreationDate("1970-01-01T00:00:00.000Z");
-            } else {
-                savingGoal.setCreationDate(newestTransaction.getDate());
-            }
+            savingGoal.setCreationDate(customORM.getCurrentDate(userID));
 
             customORM.createSavingGoal(userID, savingGoal);
             createdSavingGoal = customORM.getSavingGoal(userID, savingGoal.getId());
@@ -629,18 +645,66 @@ public class PersistentModel implements Model {
         SavingGoal savingGoal = customORM.getSavingGoal(userID, savingGoalID);
         if (savingGoal != null) {
             // Set deletion date to highest date Transaction if it exists, otherwise set to start of UNIX time
-            Transaction newestTransaction = customORM.getNewestTransaction(userID);
-            String deletionDate;
-            if (newestTransaction == null) {
-                deletionDate = "1970-01-01T00:00:00.000Z";
-            } else {
-                deletionDate = newestTransaction.getDate();
-            }
+            String deletionDate = customORM.getCurrentDate(userID);
 
             customORM.deleteSavingGoal(deletionDate, userID, savingGoalID);
         } else {
             throw new ResourceNotFoundException();
         }
+    }
+
+    /**
+     * Method used to retrieve the PaymentRequests belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of PaymentRequest belonging to the user with sessionID.
+     */
+    public ArrayList<PaymentRequest> getPaymentRequests(String sessionID) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        ArrayList<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
+        for (PaymentRequest paymentRequest : paymentRequests) {
+            ArrayList<Transaction> transactions = customORM.getTransactionsByPaymentRequest(userID, paymentRequest.getID());
+            paymentRequest.setTransactions(transactions);
+            for (Transaction transaction : transactions) {
+                this.populateCategory(userID, transaction);
+            }
+        }
+
+        return paymentRequests;
+    }
+
+    /**
+     * Method used to create a new PaymentRequest for a certain user.
+     *
+     * @param sessionID  The sessionID of the user.
+     * @param paymentRequest The PaymentRequest object to be used to create the new PaymentRequest.
+     * @return The PaymentRequest created by this method.
+     */
+    public PaymentRequest postPaymentRequest(String sessionID, PaymentRequest paymentRequest)
+            throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        PaymentRequest createdPaymentRequest = null;
+        try {
+            connection.setAutoCommit(false);
+            customORM.increaseHighestPaymentRequestID(userID);
+            long paymentRequestID = customORM.getHighestPaymentRequestID(userID);
+            connection.commit();
+            connection.setAutoCommit(true);
+            paymentRequest.setID(paymentRequestID);
+
+            // Set filled to true if number_of_request == 0, otherwise false.
+            if (paymentRequest.getNumber_of_requests() == 0) {
+                paymentRequest.setFilled(true);
+            } else {
+                paymentRequest.setFilled(false);
+            }
+
+            customORM.createPaymentRequest(userID, paymentRequest);
+            createdPaymentRequest = customORM.getPaymentRequest(userID, paymentRequest.getID());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return createdPaymentRequest;
     }
 
     /**

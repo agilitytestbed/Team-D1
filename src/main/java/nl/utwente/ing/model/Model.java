@@ -232,4 +232,21 @@ public interface Model {
     void deleteSavingGoal(String sessionID, long savingGoalID)
             throws InvalidSessionIDException, ResourceNotFoundException;
 
+    /**
+     * Method used to retrieve the PaymentRequests belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of PaymentRequest belonging to the user with sessionID.
+     */
+    ArrayList<PaymentRequest> getPaymentRequests(String sessionID) throws InvalidSessionIDException;
+
+    /**
+     * Method used to create a new PaymentRequest for a certain user.
+     *
+     * @param sessionID  The sessionID of the user.
+     * @param paymentRequest The PaymentRequest object to be used to create the new PaymentRequest.
+     * @return The PaymentRequest created by this method.
+     */
+    PaymentRequest postPaymentRequest(String sessionID, PaymentRequest paymentRequest) throws InvalidSessionIDException;
+
 }
