@@ -133,7 +133,8 @@ public class PersistentModel implements Model {
                 List<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
                 connection.setAutoCommit(false);
                 for (PaymentRequest paymentRequest : paymentRequests) {
-                    if (!paymentRequest.getFilled() && transaction.getAmount() == paymentRequest.getAmount()) {
+                    if (!paymentRequest.getFilled() && transaction.getAmount() == paymentRequest.getAmount() &&
+                            IntervalHelper.isSmallerThan(transaction.getDate(), paymentRequest.getDue_date())) {
                         long paymentRequestID = paymentRequest.getID();
                         customORM.linkTransactionToPaymentRequest(userID, transactionID, paymentRequestID);
                         long numberAnswered = customORM.getTransactionsByPaymentRequest(userID, paymentRequestID).size();
