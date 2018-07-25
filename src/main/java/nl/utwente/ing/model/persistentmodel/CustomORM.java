@@ -1215,6 +1215,7 @@ public class CustomORM {
             statement.setInt(1, userID);
             statement.setLong(2, transactionID);
             statement.setLong(3, paymentRequestID);
+            statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
