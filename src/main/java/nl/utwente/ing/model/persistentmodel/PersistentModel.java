@@ -26,6 +26,7 @@ public class PersistentModel implements Model {
 
     private Connection connection;
     private CustomORM customORM;
+    private UserMessageEmitter messageEmitter;
 
     /**
      * The constructor of PersistentModel.
@@ -34,6 +35,7 @@ public class PersistentModel implements Model {
     public PersistentModel() {
         this.connection = DatabaseConnection.getDatabaseConnection();
         this.customORM = new CustomORM(connection);
+        this.messageEmitter = new UserMessageEmitter(connection, customORM);
     }
 
     /**
@@ -128,9 +130,9 @@ public class PersistentModel implements Model {
             }
             this.populateCategory(userID, transaction);
 
+            List<PaymentRequest> paymentRequests = customORM.getPaymentRequests(userID);
             if (transaction.getType().equals("deposit")) {
                 // Check if Transaction answers some Payment Request
-                List<PaymentRequest> paymentRequests = customORM.getPaymentRequests(userID);
                 connection.setAutoCommit(false);
                 for (PaymentRequest paymentRequest : paymentRequests) {
                     if (!paymentRequest.getFilled() && transaction.getAmount() == paymentRequest.getAmount() &&
@@ -140,13 +142,50 @@ public class PersistentModel implements Model {
                         long numberAnswered = customORM.getTransactionsByPaymentRequest(userID, paymentRequestID).size();
                         if (numberAnswered >= paymentRequest.getNumber_of_requests()) {
                             customORM.setPaymentRequestFilled(userID, paymentRequestID);
+
+                            // User Message Event: Payment Request filled
+                            messageEmitter.eventPaymentRequestFilled(userID,
+                                    paymentRequestID, paymentRequest.getDescription());
                         }
                         break;
                     }
                 }
-                connection.commit();
-                connection.setAutoCommit(true);
+                if (!connection.getAutoCommit()) {
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                }
             }
+
+            // Check if PaymentRequests are not filled on due-date
+            for (PaymentRequest paymentRequest : paymentRequests) {
+                if (!paymentRequest.getFilled() && IntervalHelper.isSmallerThan(date, paymentRequest.getDue_date())) {
+                    // User Message Event: Payment Request not filled
+                    messageEmitter.eventPaymentRequestNotFilled(userID,
+                            paymentRequest.getID(), paymentRequest.getDescription());
+                }
+            }
+
+            float newBalance = this.getBalance(sessionID);
+            float oldBalance;
+            if (type.equals("deposit")) {
+                oldBalance = newBalance - amount;
+            } else {
+                oldBalance = newBalance + amount;
+            }
+
+            if (oldBalance >= 0 && newBalance < 0) {
+                // User Message Event: balance drop below zero
+                messageEmitter.eventBalanceBelowZero(userID);
+            }
+
+            float oldHighestBalance = customORM.getHighestLifetimeBalance(userID);
+            customORM.updateHighestLifetimeBalance(userID, newBalance);
+            float newHighestBalance = customORM.getHighestLifetimeBalance(userID);
+            if (newHighestBalance > oldHighestBalance) {
+                // User Message Event: new highest lifetime balance
+                messageEmitter.eventBalanceNewHigh(userID);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -552,6 +591,14 @@ public class PersistentModel implements Model {
 
         candlesticks.remove(0);
 
+        for (SavingGoal savingGoal : savingGoals) {
+            if (savingGoal.getDeletionDate() != null &&
+                    savingGoal.getBalance() >= savingGoal.getGoal()) {
+                // User Message Event: Saving Goal reached
+                messageEmitter.eventSavingGoalReached(userID, savingGoal.getId(), savingGoal.getName());
+            }
+        }
+
         return candlesticks;
     }
 
@@ -736,24 +783,20 @@ public class PersistentModel implements Model {
         }
     }
 
+
     /**
-     * Method used to emit a UserMessage for a certain user.
+     * Method used to retrieve the current balance of a certain user.
      *
-     * @param userID  The ID of the user for which the UserMessage will be emitted.
-     * @param type    The type of the to be emitted UserMessage.
-     * @param message The message of the to be emitted UserMessage.
+     * @param sessionID The sessionID of the user.
+     * @return The current balance of the user.
      */
-    private void emitUserMessage(int userID, String type, String message) {
+    private float getBalance(String sessionID) {
         try {
-            connection.setAutoCommit(false);
-            customORM.increaseHighestUserMessageID(userID);
-            long userMessageID = customORM.getHighestUserMessageID(userID);
-            connection.commit();
-            connection.setAutoCommit(true);
-            String date = customORM.getCurrentDate(userID);
-            customORM.createUserMessage(userID, new UserMessage(userMessageID, message, date, false, type));
-        } catch (SQLException e) {
+            return this.getBalanceHistory(sessionID, IntervalPeriod.HOUR, 1).get(0).getClose();
+        } catch (InvalidSessionIDException e) {
+            // This never happens, because this method will never get called with an invalid session ID.
             e.printStackTrace();
+            return 0;
         }
     }
 
