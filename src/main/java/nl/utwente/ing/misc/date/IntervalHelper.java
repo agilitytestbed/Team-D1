@@ -112,4 +112,15 @@ public class IntervalHelper {
         return (date.getYear() - 1970) * 12 + (date.getMonthValue() - 1);
     }
 
+    /**
+     * Method used to convert a String object containing a date to a LocalDateTime object containing that date.
+     *
+     * @param s The String object containing a date that will be converted to a LocalDateTime object containing that
+     *          date.
+     * @return The LocalDateTime object containing the date contained in the given String object.
+     */
+    public static LocalDateTime toLocalDateTime(String s) {
+        return LocalDateTime.parse(s.split("Z")[0]);
+    }
+
 }
