@@ -1363,7 +1363,7 @@ public class CustomORM {
      * @param userID The ID of the user to which the certain UserMessage belongs.
      * @param userMessageID The ID of the UserMessage for which it should be indicated that it is read.
      */
-    public void setUserMessageFilled(int userID, long userMessageID) {
+    public void setUserMessageRead(int userID, long userMessageID) {
         try {
             PreparedStatement statement = connection.prepareStatement(SET_USER_MESSAGE_READ);
             statement.setInt(1, userID);
