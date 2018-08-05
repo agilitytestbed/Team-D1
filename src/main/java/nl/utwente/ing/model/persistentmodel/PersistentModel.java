@@ -593,7 +593,7 @@ public class PersistentModel implements Model {
         candlesticks.remove(0);
 
         for (SavingGoal savingGoal : savingGoals) {
-            if (savingGoal.getDeletionDate() != null &&
+            if (savingGoal.getDeletionDate() == null &&
                     savingGoal.getBalance() >= savingGoal.getGoal()) {
                 // User Message Event: Saving Goal reached
                 messageEmitter.eventSavingGoalReached(userID, savingGoal.getId(), savingGoal.getName());
