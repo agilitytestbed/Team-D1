@@ -149,70 +149,70 @@ public class CustomORM {
                     "AND description LIKE ?\n" +
                     "AND external_iban LIKE ?\n" +
                     "AND type LIKE ?;";
-    public static final String GET_TRANSACTIONS_ASCENDING =
+    private static final String GET_TRANSACTIONS_ASCENDING =
             "SELECT transaction_id, date, amount, description, external_iban, type\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "ORDER BY date ASC;";
-    public static final String GET_CURRENT_DATE =
+    private static final String GET_CURRENT_DATE =
             "SELECT date\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "ORDER BY date DESC\n" +
                     "LIMIT 1";
-    public static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
+    private static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
             "UPDATE User_Table\n" +
                     "SET highest_saving_goal_id = highest_saving_goal_id + 1\n" +
                     "WHERE user_id = ?;";
-    public static final String GET_HIGHEST_SAVING_GOAL_ID =
+    private static final String GET_HIGHEST_SAVING_GOAL_ID =
             "SELECT highest_saving_goal_id\n" +
                     "FROM User_Table\n" +
                     "WHERE user_id = ?;";
-    public static final String CREATE_SAVING_GOAL =
+    private static final String CREATE_SAVING_GOAL =
             "INSERT INTO Saving_Goal (user_id, saving_goal_id, creation_date, name, goal, " +
                     "save_per_month, min_balance_required)\n" +
                     "VALUES (?, ?, ?, ?, ?, ?, ?);";
-    public static final String GET_SAVING_GOAL =
+    private static final String GET_SAVING_GOAL =
             "SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required\n" +
                     "FROM Saving_Goal\n" +
                     "WHERE user_id = ?\n" +
                     "AND saving_goal_id = ?;";
-    public static final String DELETE_SAVING_GOAL =
+    private static final String DELETE_SAVING_GOAL =
             "UPDATE Saving_Goal\n" +
                     "SET deletion_date = ?\n" +
                     "WHERE user_id = ?\n" +
                     "AND saving_goal_id = ?;";
-    public static final String GET_SAVING_GOALS =
+    private static final String GET_SAVING_GOALS =
             "SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required\n" +
                     "FROM Saving_Goal\n" +
                     "WHERE user_id = ?;";
-    public static final String INCREASE_HIGHEST_PAYMENT_REQUEST_ID =
+    private static final String INCREASE_HIGHEST_PAYMENT_REQUEST_ID =
             "UPDATE User_Table\n" +
                     "SET highest_payment_request_id = highest_payment_request_id + 1\n" +
                     "WHERE user_id = ?;";
-    public static final String GET_HIGHEST_PAYMENT_REQUEST_ID =
+    private static final String GET_HIGHEST_PAYMENT_REQUEST_ID =
             "SELECT highest_payment_request_id\n" +
                     "FROM User_Table\n" +
                     "WHERE user_id = ?;";
-    public static final String CREATE_PAYMENT_REQUEST =
+    private static final String CREATE_PAYMENT_REQUEST =
             "INSERT INTO Payment_Request (user_id, payment_request_id, description, due_date, " +
                     "amount, number_of_requests, filled)\n" +
                     "VALUES (?, ?, ?, ?, ?, ?, ?);\n";
-    public static final String GET_PAYMENT_REQUEST =
+    private static final String GET_PAYMENT_REQUEST =
             "SELECT payment_request_id, description, due_date, amount, number_of_requests, filled\n" +
                     "FROM Payment_Request\n" +
                     "WHERE user_id = ?\n" +
                     "AND payment_request_id = ?;";
-    public static final String GET_PAYMENT_REQUESTS =
+    private static final String GET_PAYMENT_REQUESTS =
             "SELECT payment_request_id, description, due_date, amount, number_of_requests, filled\n" +
                     "FROM Payment_Request\n" +
                     "WHERE user_id = ?;";
-    public static final String SET_PAYMENT_REQUEST_FILLED =
+    private static final String SET_PAYMENT_REQUEST_FILLED =
             "UPDATE Payment_Request\n" +
                     "SET filled = 1\n" +
                     "WHERE user_id = ?\n" +
                     "AND payment_request_id = ?;";
-    public static final String GET_TRANSACTIONS_BY_PAYMENT_REQUEST =
+    private static final String GET_TRANSACTIONS_BY_PAYMENT_REQUEST =
             "SELECT t.transaction_id, t.date, t.amount, t.description, t.external_iban, t.type\n" +
                     "FROM Payment_Request pr, Payment_Request_Transaction prt, Transaction_Table t\n" +
                     "WHERE pr.payment_request_id = prt.payment_request_id\n" +
@@ -221,44 +221,44 @@ public class CustomORM {
                     "AND prt.user_id = t.user_id\n" +
                     "AND t.user_id = ?\n" +
                     "AND pr.payment_request_id = ?;";
-    public static final String LINK_TRANSACTION_TO_PAYMENT_REQUEST =
+    private static final String LINK_TRANSACTION_TO_PAYMENT_REQUEST =
             "INSERT INTO Payment_Request_Transaction (user_id, transaction_id, payment_request_id)\n" +
                     "VALUES (?, ?, ?);";
-    public static final String INCREASE_HIGHEST_USER_MESSAGE_ID =
+    private static final String INCREASE_HIGHEST_USER_MESSAGE_ID =
             "UPDATE User_Table\n" +
                     "SET highest_user_message_id = highest_user_message_id + 1\n" +
                     "WHERE user_id = ?;\n";
-    public static final String GET_HIGHEST_USER_MESSAGE_ID =
+    private static final String GET_HIGHEST_USER_MESSAGE_ID =
             "SELECT highest_user_message_id\n" +
                     "FROM User_Table\n" +
                     "WHERE user_id = ?;";
-    public static final String GET_USER_MESSAGE =
+    private static final String GET_USER_MESSAGE =
             "SELECT user_message_id, message, date, read, type\n" +
                     "FROM User_Message\n" +
                     "WHERE user_id = ?\n" +
                     "AND user_message_id = ?;";
-    public static final String CREATE_USER_MESSAGE =
+    private static final String CREATE_USER_MESSAGE =
             "INSERT INTO User_Message (user_id, user_message_id, message, date, read, type)\n" +
                     "VALUES (?, ?, ?, ?, 0, ?);";
-    public static final String GET_UNREAD_USER_MESSAGES =
+    private static final String GET_UNREAD_USER_MESSAGES =
             "SELECT user_message_id, message, date, read, type\n" +
                     "FROM User_Message\n" +
                     "WHERE user_id = ?\n" +
                     "AND read = 0;";
-    public static final String GET_ALL_USER_MESSAGES =
+    private static final String GET_ALL_USER_MESSAGES =
             "SELECT user_message_id, message, date, read, type\n" +
                     "FROM User_Message\n" +
                     "WHERE user_id = ?;";
-    public static final String SET_USER_MESSAGE_READ =
+    private static final String SET_USER_MESSAGE_READ =
             "UPDATE User_Message\n" +
                     "SET read = 1\n" +
                     "WHERE user_id = ?\n" +
                     "AND user_message_id = ?;";
-    public static final String GET_HIGHEST_LIFETIME_BALANCE =
+    private static final String GET_HIGHEST_LIFETIME_BALANCE =
             "SELECT highest_lifetime_balance\n" +
                     "FROM User_Table\n" +
                     "WHERE user_id = ?;";
-    public static final String UPDATE_HIGHEST_LIFETIME_BALANCE =
+    private static final String UPDATE_HIGHEST_LIFETIME_BALANCE =
             "UPDATE User_Table\n" +
                     "SET highest_lifetime_balance = \n" +
                     "  CASE WHEN ? > highest_lifetime_balance \n" +
