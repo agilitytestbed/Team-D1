@@ -708,6 +708,35 @@ public class PersistentModel implements Model {
     }
 
     /**
+     * Method used to retrieve the unread UserMessages belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of UserMessages belonging to the user with sessionID.
+     */
+    public ArrayList<UserMessage> getUnreadUserMessages(String sessionID) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        return customORM.getUnreadUserMessages(userID);
+    }
+
+    /**
+     * Method used to indicate that a certain UserMessage of a certain user is read.
+     *
+     * @param sessionID     The sessionID of the user.
+     * @param userMessageID The ID of the UserMessage of the certain user that should be marked as read.
+     */
+    public void setUserMessageRead(String sessionID, long userMessageID)
+            throws InvalidSessionIDException, ResourceNotFoundException {
+        int userID = this.getUserID(sessionID);
+
+        UserMessage userMessage = customORM.getUserMessage(userID, userMessageID);
+        if (userMessage != null) {
+            customORM.setUserMessageRead(userID, userMessageID);
+        } else {
+            throw new ResourceNotFoundException();
+        }
+    }
+
+    /**
      * Method used to populate a Transaction object with a Category object.
      *
      * @param transaction The Transaction object that will be populated by a Category object.

@@ -243,10 +243,26 @@ public interface Model {
     /**
      * Method used to create a new PaymentRequest for a certain user.
      *
-     * @param sessionID  The sessionID of the user.
+     * @param sessionID      The sessionID of the user.
      * @param paymentRequest The PaymentRequest object to be used to create the new PaymentRequest.
      * @return The PaymentRequest created by this method.
      */
     PaymentRequest postPaymentRequest(String sessionID, PaymentRequest paymentRequest) throws InvalidSessionIDException;
 
+    /**
+     * Method used to retrieve the unread UserMessages belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of UserMessages belonging to the user with sessionID.
+     */
+    ArrayList<UserMessage> getUnreadUserMessages(String sessionID) throws InvalidSessionIDException;
+
+    /**
+     * Method used to indicate that a certain UserMessage of a certain user is read.
+     *
+     * @param sessionID     The sessionID of the user.
+     * @param userMessageID The ID of the UserMessage of the certain user that should be marked as read.
+     */
+    void setUserMessageRead(String sessionID, long userMessageID)
+            throws InvalidSessionIDException, ResourceNotFoundException;
 }
