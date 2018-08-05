@@ -243,6 +243,38 @@ AND pr.payment_request_id = ?;
 INSERT INTO Payment_Request_Transaction (user_id, transaction_id, payment_request_id)
 VALUES (?, ?, ?);
 
+	increaseHighestUserMessageID(user_id):
+UPDATE User_Table
+SET highest_user_message_id = highest_user_message_id + 1
+WHERE user_id = ?;
+
+	getHighestUserMessageID(user_id):
+SELECT highest_user_message_id
+FROM User_Table
+WHERE user_id = ?;
+
+    getUserMessage(user_id, user_message_id):
+SELECT user_message_id, message, date, read, type
+FROM User_Message
+WHERE user_id = ?
+AND user_message_id = ?;
+
+    createUserMessage(user_id, user_message_id, message, date, type):
+INSERT INTO User_Message (user_id, user_message_id, message, date, read, type)
+VALUES (?, ?, ?, ?, 0, ?);
+
+    getUnreadUserMessages(user_id):
+SELECT user_message_id, message, date, read, type
+FROM User_Message
+WHERE user_id = ?
+AND read = 0;
+
+    setUserMessageRead(user_id, user_message_id):
+UPDATE User_Message
+SET read = 1
+WHERE user_id = ?
+AND user_message_id = ?;
+
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
 VALUES (?, ?, ?);
@@ -272,10 +304,11 @@ AND t.user_id = ?
 AND t.transaction_id = ?;
 
 	createNewUser(session_id):
-INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id)
-VALUES (?, 0, 0, 0, 0, 0);
+INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id, highest_user_message_id)
+VALUES (?, 0, 0, 0, 0, 0, 0);
 
 	getUserID(session_id):
 SELECT user_id
 FROM User_Table
 WHERE session_id = ?;
+
