@@ -158,7 +158,7 @@ public class PersistentModel implements Model {
 
             // Check if PaymentRequests are not filled on due-date
             for (PaymentRequest paymentRequest : paymentRequests) {
-                if (!paymentRequest.getFilled() && IntervalHelper.isSmallerThan(date, paymentRequest.getDue_date())) {
+                if (!paymentRequest.getFilled() && IntervalHelper.isSmallerThan(paymentRequest.getDue_date(), date)) {
                     // User Message Event: Payment Request not filled
                     messageEmitter.eventPaymentRequestNotFilled(userID,
                             paymentRequest.getID(), paymentRequest.getDescription());
