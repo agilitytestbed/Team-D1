@@ -471,9 +471,9 @@ public class PersistentModel implements Model {
      * Method used to retrieve balance history information of a certain user in the form of a list of
      * BalanceCandlesticks.
      *
-     * @param sessionID The sessionID of the user.
+     * @param sessionID      The sessionID of the user.
      * @param intervalPeriod The IntervalPeriod specifying the span of intervals.
-     * @param amount The amount of intervals for which BalanceCandlesticks should be generated.
+     * @param amount         The amount of intervals for which BalanceCandlesticks should be generated.
      * @return The balance history information of a certain user in the form of a list of BalanceCandlesticks.
      */
     public ArrayList<BalanceCandlestick> getBalanceHistory(String sessionID, IntervalPeriod intervalPeriod, int amount)
@@ -676,7 +676,7 @@ public class PersistentModel implements Model {
     /**
      * Method used to create a new PaymentRequest for a certain user.
      *
-     * @param sessionID  The sessionID of the user.
+     * @param sessionID      The sessionID of the user.
      * @param paymentRequest The PaymentRequest object to be used to create the new PaymentRequest.
      * @return The PaymentRequest created by this method.
      */
@@ -733,6 +733,27 @@ public class PersistentModel implements Model {
             customORM.setUserMessageRead(userID, userMessageID);
         } else {
             throw new ResourceNotFoundException();
+        }
+    }
+
+    /**
+     * Method used to emit a UserMessage for a certain user.
+     *
+     * @param userID  The ID of the user for which the UserMessage will be emitted.
+     * @param type    The type of the to be emitted UserMessage.
+     * @param message The message of the to be emitted UserMessage.
+     */
+    private void emitUserMessage(int userID, String type, String message) {
+        try {
+            connection.setAutoCommit(false);
+            customORM.increaseHighestUserMessageID(userID);
+            long userMessageID = customORM.getHighestUserMessageID(userID);
+            connection.commit();
+            connection.setAutoCommit(true);
+            String date = customORM.getCurrentDate(userID);
+            customORM.createUserMessage(userID, new UserMessage(userMessageID, message, date, false, type));
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
