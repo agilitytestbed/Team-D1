@@ -103,6 +103,8 @@ public class PersistentModel implements Model {
         int userID = this.getUserID(sessionID);
         Transaction transaction = null;
         try {
+            float oldBalance = this.getBalance(sessionID);
+
             connection.setAutoCommit(false);
             customORM.increaseHighestTransactionID(userID);
             long transactionID = customORM.getHighestTransactionID(userID);
@@ -166,12 +168,6 @@ public class PersistentModel implements Model {
             }
 
             float newBalance = this.getBalance(sessionID);
-            float oldBalance;
-            if (type.equals("deposit")) {
-                oldBalance = newBalance - amount;
-            } else {
-                oldBalance = newBalance + amount;
-            }
 
             if (oldBalance >= 0 && newBalance < 0) {
                 // User Message Event: balance drop below zero
