@@ -269,11 +269,30 @@ FROM User_Message
 WHERE user_id = ?
 AND read = 0;
 
+    getAllUserMessages(user_id):
+SELECT user_message_id, message, date, read, type
+FROM User_Message
+WHERE user_id = ?;
+
     setUserMessageRead(user_id, user_message_id):
 UPDATE User_Message
 SET read = 1
 WHERE user_id = ?
 AND user_message_id = ?;
+
+    getHighestLifetimeBalance(user_id):
+SELECT highest_lifetime_balance
+FROM User_Table
+WHERE user_id = ?;
+
+    updateHighestLifetimeBalance(current_balance, current_balance, user_id):
+UPDATE User_Table
+SET highest_lifetime_balance = 
+  CASE WHEN ? > highest_lifetime_balance 
+    THEN ? 
+    ELSE highest_lifetime_balance 
+  END
+WHERE user_id = ?;
 
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
@@ -304,8 +323,8 @@ AND t.user_id = ?
 AND t.transaction_id = ?;
 
 	createNewUser(session_id):
-INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id, highest_user_message_id)
-VALUES (?, 0, 0, 0, 0, 0, 0);
+INSERT INTO User_Table (session_id, highest_lifetime_balance, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id, highest_user_message_id)
+VALUES (?, 0, 0, 0, 0, 0, 0, 0);
 
 	getUserID(session_id):
 SELECT user_id
