@@ -519,7 +519,8 @@ public class PersistentModel implements Model {
             throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
 
-        LocalDateTime[] intervals = IntervalHelper.getIntervals(intervalPeriod, amount);
+        LocalDateTime[] intervals = IntervalHelper.getIntervals(intervalPeriod, amount,
+                IntervalHelper.toLocalDateTime(customORM.getCurrentDate(userID)));
 
         ArrayList<Transaction> transactions = customORM.getTransactionsAscending(userID);
         ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);

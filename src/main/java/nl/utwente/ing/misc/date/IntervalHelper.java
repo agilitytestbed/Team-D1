@@ -27,9 +27,9 @@ public class IntervalHelper {
      * @param amount         The amount of intervals to be generated.
      * @return An array containing LocalDateTime objects representing the requested intervals.
      */
-    public static LocalDateTime[] getIntervals(IntervalPeriod intervalPeriod, int amount) {
+    public static LocalDateTime[] getIntervals(IntervalPeriod intervalPeriod, int amount, LocalDateTime until) {
         LocalDateTime[] intervals = new LocalDateTime[amount + 2];
-        intervals[amount + 1] = LocalDateTime.now(ZoneOffset.UTC);
+        intervals[amount + 1] = until;
         intervals[0] = LocalDateTime.parse("1970-01-01T00:00:00.000");
 
         if (intervalPeriod == IntervalPeriod.YEAR) {
