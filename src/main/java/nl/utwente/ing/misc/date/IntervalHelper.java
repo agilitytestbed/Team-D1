@@ -27,9 +27,9 @@ public class IntervalHelper {
      * @param amount         The amount of intervals to be generated.
      * @return An array containing LocalDateTime objects representing the requested intervals.
      */
-    public static LocalDateTime[] getIntervals(IntervalPeriod intervalPeriod, int amount) {
+    public static LocalDateTime[] getIntervals(IntervalPeriod intervalPeriod, int amount, LocalDateTime until) {
         LocalDateTime[] intervals = new LocalDateTime[amount + 2];
-        intervals[amount + 1] = LocalDateTime.now(ZoneOffset.UTC);
+        intervals[amount + 1] = until;
         intervals[0] = LocalDateTime.parse("1970-01-01T00:00:00.000");
 
         if (intervalPeriod == IntervalPeriod.YEAR) {
@@ -110,6 +110,17 @@ public class IntervalHelper {
     public static int getMonthIdentifier(String dateString) {
         LocalDateTime date = LocalDateTime.parse(dateString.split("Z")[0]);
         return (date.getYear() - 1970) * 12 + (date.getMonthValue() - 1);
+    }
+
+    /**
+     * Method used to convert a String object containing a date to a LocalDateTime object containing that date.
+     *
+     * @param s The String object containing a date that will be converted to a LocalDateTime object containing that
+     *          date.
+     * @return The LocalDateTime object containing the date contained in the given String object.
+     */
+    public static LocalDateTime toLocalDateTime(String s) {
+        return LocalDateTime.parse(s.split("Z")[0]);
     }
 
 }

@@ -50,11 +50,13 @@ public class DatabaseConnection {
                     "CREATE TABLE IF NOT EXISTS User_Table(\n" +
                             "  user_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                             "  session_id TEXT,\n" +
+                            "  highest_lifetime_balance FLOAT,\n" +
                             "  highest_transaction_id BIGINT,\n" +
                             "  highest_category_id BIGINT,\n" +
                             "  highest_category_rule_id BIGINT,\n" +
                             "  highest_saving_goal_id BIGINT,\n" +
-                            "  highest_payment_request_id BIGINT\n" +
+                            "  highest_payment_request_id BIGINT,\n" +
+                            "  highest_user_message_id BIGINT\n" +
                             ");"
             );
             statement.executeUpdate(
@@ -135,6 +137,16 @@ public class DatabaseConnection {
                     "  FOREIGN KEY(payment_request_id) REFERENCES Payment_Request(payment_request_id),\n" +
                     "  FOREIGN KEY(transaction_id) REFERENCES Transaction_Table(transaction_id),\n" +
                     "  PRIMARY KEY(user_id, payment_request_id, transaction_id)\n" +
+                    ");");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS User_Message(\n" +
+                    "  user_id INTEGER,\n" +
+                    "  user_message_id BIGINT,\n" +
+                    "  message TEXT,\n" +
+                    "  date DATETIME,\n" +
+                    "  read BOOLEAN,\n" +
+                    "  type TEXT,\n" +
+                    "  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),\n" +
+                    "  PRIMARY KEY(user_id, user_message_id)\n" +
                     ");");
             statement.close();
             connection.setAutoCommit(true);

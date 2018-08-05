@@ -1,11 +1,13 @@
 CREATE TABLE IF NOT EXISTS User_Table(
   user_id INTEGER PRIMARY KEY AUTOINCREMENT,
   session_id TEXT,
+  highest_lifetime_balance FLOAT,
   highest_transaction_id BIGINT,
   highest_category_id BIGINT,
   highest_category_rule_id BIGINT,
   highest_saving_goal_id BIGINT,
-  highest_payment_request_id BIGINT
+  highest_payment_request_id BIGINT,
+  highest_user_message_id BIGINT
 );
 
 CREATE TABLE IF NOT EXISTS Transaction_Table(
@@ -84,5 +86,16 @@ CREATE TABLE IF NOT EXISTS Payment_Request_Transaction(
   FOREIGN KEY(payment_request_id) REFERENCES Payment_Request(payment_request_id),
   FOREIGN KEY(transaction_id) REFERENCES Transaction_Table(transaction_id),
   PRIMARY KEY(user_id, payment_request_id, transaction_id)
+);
+
+CREATE TABLE IF NOT EXISTS User_Message(
+  user_id INTEGER,
+  user_message_id BIGINT,
+  message TEXT,
+  date DATETIME,
+  read BOOLEAN,
+  type TEXT,
+  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
+  PRIMARY KEY(user_id, user_message_id)
 );
 

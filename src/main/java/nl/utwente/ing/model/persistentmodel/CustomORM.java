@@ -149,70 +149,70 @@ public class CustomORM {
                     "AND description LIKE ?\n" +
                     "AND external_iban LIKE ?\n" +
                     "AND type LIKE ?;";
-    public static final String GET_TRANSACTIONS_ASCENDING =
+    private static final String GET_TRANSACTIONS_ASCENDING =
             "SELECT transaction_id, date, amount, description, external_iban, type\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "ORDER BY date ASC;";
-    public static final String GET_CURRENT_DATE =
+    private static final String GET_CURRENT_DATE =
             "SELECT date\n" +
                     "FROM Transaction_Table\n" +
                     "WHERE user_id = ?\n" +
                     "ORDER BY date DESC\n" +
                     "LIMIT 1";
-    public static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
+    private static final String INCREASE_HIGHEST_SAVING_GOAL_ID =
             "UPDATE User_Table\n" +
                     "SET highest_saving_goal_id = highest_saving_goal_id + 1\n" +
                     "WHERE user_id = ?;";
-    public static final String GET_HIGHEST_SAVING_GOAL_ID =
+    private static final String GET_HIGHEST_SAVING_GOAL_ID =
             "SELECT highest_saving_goal_id\n" +
                     "FROM User_Table\n" +
                     "WHERE user_id = ?;";
-    public static final String CREATE_SAVING_GOAL =
+    private static final String CREATE_SAVING_GOAL =
             "INSERT INTO Saving_Goal (user_id, saving_goal_id, creation_date, name, goal, " +
                     "save_per_month, min_balance_required)\n" +
                     "VALUES (?, ?, ?, ?, ?, ?, ?);";
-    public static final String GET_SAVING_GOAL =
+    private static final String GET_SAVING_GOAL =
             "SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required\n" +
                     "FROM Saving_Goal\n" +
                     "WHERE user_id = ?\n" +
                     "AND saving_goal_id = ?;";
-    public static final String DELETE_SAVING_GOAL =
+    private static final String DELETE_SAVING_GOAL =
             "UPDATE Saving_Goal\n" +
                     "SET deletion_date = ?\n" +
                     "WHERE user_id = ?\n" +
                     "AND saving_goal_id = ?;";
-    public static final String GET_SAVING_GOALS =
+    private static final String GET_SAVING_GOALS =
             "SELECT saving_goal_id, creation_date, deletion_date, name, goal, save_per_month, min_balance_required\n" +
                     "FROM Saving_Goal\n" +
                     "WHERE user_id = ?;";
-    public static final String INCREASE_HIGHEST_PAYMENT_REQUEST_ID =
+    private static final String INCREASE_HIGHEST_PAYMENT_REQUEST_ID =
             "UPDATE User_Table\n" +
                     "SET highest_payment_request_id = highest_payment_request_id + 1\n" +
                     "WHERE user_id = ?;";
-    public static final String GET_HIGHEST_PAYMENT_REQUEST_ID =
+    private static final String GET_HIGHEST_PAYMENT_REQUEST_ID =
             "SELECT highest_payment_request_id\n" +
                     "FROM User_Table\n" +
                     "WHERE user_id = ?;";
-    public static final String CREATE_PAYMENT_REQUEST =
+    private static final String CREATE_PAYMENT_REQUEST =
             "INSERT INTO Payment_Request (user_id, payment_request_id, description, due_date, " +
                     "amount, number_of_requests, filled)\n" +
                     "VALUES (?, ?, ?, ?, ?, ?, ?);\n";
-    public static final String GET_PAYMENT_REQUEST =
+    private static final String GET_PAYMENT_REQUEST =
             "SELECT payment_request_id, description, due_date, amount, number_of_requests, filled\n" +
                     "FROM Payment_Request\n" +
                     "WHERE user_id = ?\n" +
                     "AND payment_request_id = ?;";
-    public static final String GET_PAYMENT_REQUESTS =
+    private static final String GET_PAYMENT_REQUESTS =
             "SELECT payment_request_id, description, due_date, amount, number_of_requests, filled\n" +
                     "FROM Payment_Request\n" +
                     "WHERE user_id = ?;";
-    public static final String SET_PAYMENT_REQUEST_FILLED =
+    private static final String SET_PAYMENT_REQUEST_FILLED =
             "UPDATE Payment_Request\n" +
                     "SET filled = 1\n" +
                     "WHERE user_id = ?\n" +
                     "AND payment_request_id = ?;";
-    public static final String GET_TRANSACTIONS_BY_PAYMENT_REQUEST =
+    private static final String GET_TRANSACTIONS_BY_PAYMENT_REQUEST =
             "SELECT t.transaction_id, t.date, t.amount, t.description, t.external_iban, t.type\n" +
                     "FROM Payment_Request pr, Payment_Request_Transaction prt, Transaction_Table t\n" +
                     "WHERE pr.payment_request_id = prt.payment_request_id\n" +
@@ -221,9 +221,51 @@ public class CustomORM {
                     "AND prt.user_id = t.user_id\n" +
                     "AND t.user_id = ?\n" +
                     "AND pr.payment_request_id = ?;";
-    public static final String LINK_TRANSACTION_TO_PAYMENT_REQUEST =
+    private static final String LINK_TRANSACTION_TO_PAYMENT_REQUEST =
             "INSERT INTO Payment_Request_Transaction (user_id, transaction_id, payment_request_id)\n" +
                     "VALUES (?, ?, ?);";
+    private static final String INCREASE_HIGHEST_USER_MESSAGE_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_user_message_id = highest_user_message_id + 1\n" +
+                    "WHERE user_id = ?;\n";
+    private static final String GET_HIGHEST_USER_MESSAGE_ID =
+            "SELECT highest_user_message_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_USER_MESSAGE =
+            "SELECT user_message_id, message, date, read, type\n" +
+                    "FROM User_Message\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND user_message_id = ?;";
+    private static final String CREATE_USER_MESSAGE =
+            "INSERT INTO User_Message (user_id, user_message_id, message, date, read, type)\n" +
+                    "VALUES (?, ?, ?, ?, 0, ?);";
+    private static final String GET_UNREAD_USER_MESSAGES =
+            "SELECT user_message_id, message, date, read, type\n" +
+                    "FROM User_Message\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND read = 0;";
+    private static final String GET_ALL_USER_MESSAGES =
+            "SELECT user_message_id, message, date, read, type\n" +
+                    "FROM User_Message\n" +
+                    "WHERE user_id = ?;";
+    private static final String SET_USER_MESSAGE_READ =
+            "UPDATE User_Message\n" +
+                    "SET read = 1\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND user_message_id = ?;";
+    private static final String GET_HIGHEST_LIFETIME_BALANCE =
+            "SELECT highest_lifetime_balance\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    private static final String UPDATE_HIGHEST_LIFETIME_BALANCE =
+            "UPDATE User_Table\n" +
+                    "SET highest_lifetime_balance = \n" +
+                    "  CASE WHEN ? > highest_lifetime_balance \n" +
+                    "    THEN ? \n" +
+                    "    ELSE highest_lifetime_balance \n" +
+                    "  END\n" +
+                    "WHERE user_id = ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -248,9 +290,10 @@ public class CustomORM {
                     "AND t.user_id = ?\n" +
                     "AND t.transaction_id = ?;";
     private static final String CREATE_NEW_USER =
-            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, " +
-                    "highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id)\n" +
-                    "VALUES (?, 0, 0, 0, 0, 0);";
+            "INSERT INTO User_Table (session_id, highest_lifetime_balance, highest_transaction_id, " +
+                    "highest_category_id, highest_category_rule_id, highest_saving_goal_id, " +
+                    "highest_payment_request_id, highest_user_message_id)\n" +
+                    "VALUES (?, 0, 0, 0, 0, 0, 0, 0);";
     private static final String GET_USER_ID =
             "SELECT user_id\n" +
                     "FROM User_Table\n" +
@@ -1076,7 +1119,7 @@ public class CustomORM {
     /**
      * Method used to insert a PaymentRequest into the database.
      *
-     * @param userID     The ID of the user to which this new PaymentRequest will belong.
+     * @param userID         The ID of the user to which this new PaymentRequest will belong.
      * @param paymentRequest The PaymentRequest object to be inserted into the database.
      */
     public void createPaymentRequest(int userID, PaymentRequest paymentRequest) {
@@ -1098,7 +1141,7 @@ public class CustomORM {
     /**
      * Method used to retrieve a PaymentRequest from the database.
      *
-     * @param userID       The id of the user from which a PaymentRequest should be retrieved.
+     * @param userID           The id of the user from which a PaymentRequest should be retrieved.
      * @param paymentRequestID The id of the to be retrieved PaymentRequest.
      * @return A PaymentRequest object containing data retrieved from the database.
      */
@@ -1132,7 +1175,7 @@ public class CustomORM {
      * @param userID The ID of the user to who the to be retrieved PaymentRequest objects belong.
      * @return An ArrayList of PaymentRequest objects.
      */
-    public ArrayList<PaymentRequest> getPaymentRequest(int userID) {
+    public ArrayList<PaymentRequest> getPaymentRequests(int userID) {
         ArrayList<PaymentRequest> paymentRequests = new ArrayList<>();
         try {
             PreparedStatement statement = connection.prepareStatement(GET_PAYMENT_REQUESTS);
@@ -1158,7 +1201,7 @@ public class CustomORM {
     /**
      * Method used to indicate that a certain PaymentRequest of a certain user has been filled.
      *
-     * @param userID The ID of the user to which the certain PaymentRequest belongs.
+     * @param userID           The ID of the user to which the certain PaymentRequest belongs.
      * @param paymentRequestID The ID of the PaymentRequest for which it should be indicated that it is filled.
      */
     public void setPaymentRequestFilled(int userID, long paymentRequestID) {
@@ -1176,7 +1219,7 @@ public class CustomORM {
      * Method used to retrieve a batch of Transaction objects belonging to a certain user
      * and fulfilling a certain PaymentRequest from the database.
      *
-     * @param userID       The id of the user to who the to be retrieved Transaction objects belong.
+     * @param userID           The id of the user to who the to be retrieved Transaction objects belong.
      * @param paymentRequestID The ID of the PaymentRequest to which the retrieved Transaction objects belong.
      * @return An ArrayList of Transaction objects.
      */
@@ -1205,9 +1248,9 @@ public class CustomORM {
     /**
      * Method used to link a Transaction to a PaymentRequest in the database.
      *
-     * @param userID        The ID of the user to who the to be linked Transaction and PaymentRequest objects belong.
-     * @param transactionID The ID of the Transaction that will be linked to a PaymentRequest.
-     * @param paymentRequestID    The ID of the PaymentRequest that will be linked to a Transaction.
+     * @param userID           The ID of the user to who the to be linked Transaction and PaymentRequest objects belong.
+     * @param transactionID    The ID of the Transaction that will be linked to a PaymentRequest.
+     * @param paymentRequestID The ID of the PaymentRequest that will be linked to a Transaction.
      */
     public void linkTransactionToPaymentRequest(int userID, long transactionID, long paymentRequestID) {
         try {
@@ -1215,6 +1258,203 @@ public class CustomORM {
             statement.setInt(1, userID);
             statement.setLong(2, transactionID);
             statement.setLong(3, paymentRequestID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to increase the highestUserMessageID field of a certain user by one in the database.
+     *
+     * @param userID The ID of the user whose highestUserMessageID field should be increased.
+     */
+    public void increaseHighestUserMessageID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_USER_MESSAGE_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestUserMessageID field of a certain user from the database.
+     *
+     * @param userID The ID of the user whose highestUserMessageID field should be retrieved.
+     * @return The value of the highestUserMessageID field of the user with userID.
+     */
+    public long getHighestUserMessageID(int userID) {
+        long highestUserMessageID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_USER_MESSAGE_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestUserMessageID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestUserMessageID;
+    }
+
+    /**
+     * Method used to insert a UserMessage into the database.
+     *
+     * @param userID      The ID of the user to which this new UserMessage will belong.
+     * @param userMessage The UserMessage object to be inserted into the database.
+     */
+    public void createUserMessage(int userID, UserMessage userMessage) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_USER_MESSAGE);
+            statement.setInt(1, userID);
+            statement.setLong(2, userMessage.getID());
+            statement.setString(3, userMessage.getMessage());
+            statement.setString(4, userMessage.getDate());
+            statement.setString(5, userMessage.getType());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a UserMessage from the database.
+     *
+     * @param userID        The id of the user from which a UserMessage should be retrieved.
+     * @param userMessageID The id of the to be retrieved UserMessage.
+     * @return A UserMessage object containing data retrieved from the database.
+     */
+    public UserMessage getUserMessage(int userID, long userMessageID) {
+        UserMessage userMessage = null;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_USER_MESSAGE);
+            statement.setInt(1, userID);
+            statement.setLong(2, userMessageID);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                userMessageID = resultSet.getLong(1);
+                String message = resultSet.getString(2);
+                String date = resultSet.getString(3);
+                boolean read = resultSet.getBoolean(4);
+                String type = resultSet.getString(5);
+                userMessage = new UserMessage(userMessageID, message, date, read, type);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userMessage;
+    }
+
+    /**
+     * Method used to retrieve a batch of unread UserMessage objects belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved UserMessage objects belong.
+     * @return An ArrayList of UserMessage objects.
+     */
+    public ArrayList<UserMessage> getUnreadUserMessages(int userID) {
+        ArrayList<UserMessage> userMessages = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_UNREAD_USER_MESSAGES);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                long userMessageID = resultSet.getLong(1);
+                String message = resultSet.getString(2);
+                String date = resultSet.getString(3);
+                boolean read = resultSet.getBoolean(4);
+                String type = resultSet.getString(5);
+                userMessages.add(new UserMessage(userMessageID, message, date, read, type));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userMessages;
+    }
+
+    /**
+     * Method used to retrieve a batch of UserMessage objects belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved UserMessage objects belong.
+     * @return An ArrayList of UserMessage objects.
+     */
+    public ArrayList<UserMessage> getAllUserMessages(int userID) {
+        ArrayList<UserMessage> userMessages = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_ALL_USER_MESSAGES);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                long userMessageID = resultSet.getLong(1);
+                String message = resultSet.getString(2);
+                String date = resultSet.getString(3);
+                boolean read = resultSet.getBoolean(4);
+                String type = resultSet.getString(5);
+                userMessages.add(new UserMessage(userMessageID, message, date, read, type));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userMessages;
+    }
+
+    /**
+     * Method used to indicate that a certain UserMessage of a certain user has been read.
+     *
+     * @param userID        The ID of the user to which the certain UserMessage belongs.
+     * @param userMessageID The ID of the UserMessage for which it should be indicated that it is read.
+     */
+    public void setUserMessageRead(int userID, long userMessageID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(SET_USER_MESSAGE_READ);
+            statement.setInt(1, userID);
+            statement.setLong(2, userMessageID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method user to retrieve the highest lifetime balance of a certain user.
+     *
+     * @param userID The ID of the user whose highest lifetime balance will be retrieved.
+     * @return The highest lifetime balance of the user.
+     */
+    public float getHighestLifetimeBalance(int userID) {
+        float highestLifetimeBalance = 0;
+
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_LIFETIME_BALANCE);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                highestLifetimeBalance = resultSet.getFloat(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return highestLifetimeBalance;
+    }
+
+    /**
+     * Method used to potentially update the highest lifetime balance of a certain user.
+     * The highest lifetime balance of the user will only be updated if the current balance is higher than the current
+     * highest lifetime balance.
+     *
+     * @param userID         The ID of the user whose highest lifetime balance may be updated.
+     * @param currentBalance The currentBalance of the user.
+     */
+    public void updateHighestLifetimeBalance(int userID, float currentBalance) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(UPDATE_HIGHEST_LIFETIME_BALANCE);
+            statement.setFloat(1, currentBalance);
+            statement.setFloat(2, currentBalance);
+            statement.setInt(3, userID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

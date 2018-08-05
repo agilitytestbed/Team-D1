@@ -26,6 +26,7 @@ public class PersistentModel implements Model {
 
     private Connection connection;
     private CustomORM customORM;
+    private UserMessageEmitter messageEmitter;
 
     /**
      * The constructor of PersistentModel.
@@ -34,6 +35,7 @@ public class PersistentModel implements Model {
     public PersistentModel() {
         this.connection = DatabaseConnection.getDatabaseConnection();
         this.customORM = new CustomORM(connection);
+        this.messageEmitter = new UserMessageEmitter(connection, customORM);
     }
 
     /**
@@ -101,6 +103,8 @@ public class PersistentModel implements Model {
         int userID = this.getUserID(sessionID);
         Transaction transaction = null;
         try {
+            float oldBalance = this.getBalance(sessionID);
+
             connection.setAutoCommit(false);
             customORM.increaseHighestTransactionID(userID);
             long transactionID = customORM.getHighestTransactionID(userID);
@@ -128,9 +132,9 @@ public class PersistentModel implements Model {
             }
             this.populateCategory(userID, transaction);
 
+            List<PaymentRequest> paymentRequests = customORM.getPaymentRequests(userID);
             if (transaction.getType().equals("deposit")) {
                 // Check if Transaction answers some Payment Request
-                List<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
                 connection.setAutoCommit(false);
                 for (PaymentRequest paymentRequest : paymentRequests) {
                     if (!paymentRequest.getFilled() && transaction.getAmount() == paymentRequest.getAmount() &&
@@ -140,13 +144,44 @@ public class PersistentModel implements Model {
                         long numberAnswered = customORM.getTransactionsByPaymentRequest(userID, paymentRequestID).size();
                         if (numberAnswered >= paymentRequest.getNumber_of_requests()) {
                             customORM.setPaymentRequestFilled(userID, paymentRequestID);
+
+                            // User Message Event: Payment Request filled
+                            messageEmitter.eventPaymentRequestFilled(userID,
+                                    paymentRequestID, paymentRequest.getDescription());
                         }
                         break;
                     }
                 }
-                connection.commit();
-                connection.setAutoCommit(true);
+                if (!connection.getAutoCommit()) {
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                }
             }
+
+            // Check if PaymentRequests are not filled on due-date
+            for (PaymentRequest paymentRequest : paymentRequests) {
+                if (!paymentRequest.getFilled() && IntervalHelper.isSmallerThan(paymentRequest.getDue_date(), date)) {
+                    // User Message Event: Payment Request not filled
+                    messageEmitter.eventPaymentRequestNotFilled(userID,
+                            paymentRequest.getID(), paymentRequest.getDescription());
+                }
+            }
+
+            float newBalance = this.getBalance(sessionID);
+
+            if (oldBalance >= 0 && newBalance < 0) {
+                // User Message Event: balance drop below zero
+                messageEmitter.eventBalanceBelowZero(userID);
+            }
+
+            float oldHighestBalance = customORM.getHighestLifetimeBalance(userID);
+            customORM.updateHighestLifetimeBalance(userID, newBalance);
+            float newHighestBalance = customORM.getHighestLifetimeBalance(userID);
+            if (newHighestBalance > oldHighestBalance) {
+                // User Message Event: new highest lifetime balance
+                messageEmitter.eventBalanceNewHigh(userID);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -471,16 +506,17 @@ public class PersistentModel implements Model {
      * Method used to retrieve balance history information of a certain user in the form of a list of
      * BalanceCandlesticks.
      *
-     * @param sessionID The sessionID of the user.
+     * @param sessionID      The sessionID of the user.
      * @param intervalPeriod The IntervalPeriod specifying the span of intervals.
-     * @param amount The amount of intervals for which BalanceCandlesticks should be generated.
+     * @param amount         The amount of intervals for which BalanceCandlesticks should be generated.
      * @return The balance history information of a certain user in the form of a list of BalanceCandlesticks.
      */
     public ArrayList<BalanceCandlestick> getBalanceHistory(String sessionID, IntervalPeriod intervalPeriod, int amount)
             throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
 
-        LocalDateTime[] intervals = IntervalHelper.getIntervals(intervalPeriod, amount);
+        LocalDateTime[] intervals = IntervalHelper.getIntervals(intervalPeriod, amount,
+                IntervalHelper.toLocalDateTime(customORM.getCurrentDate(userID)));
 
         ArrayList<Transaction> transactions = customORM.getTransactionsAscending(userID);
         ArrayList<SavingGoal> savingGoals = customORM.getSavingGoals(userID);
@@ -551,6 +587,14 @@ public class PersistentModel implements Model {
         }
 
         candlesticks.remove(0);
+
+        for (SavingGoal savingGoal : savingGoals) {
+            if (savingGoal.getDeletionDate() == null &&
+                    savingGoal.getBalance() >= savingGoal.getGoal()) {
+                // User Message Event: Saving Goal reached
+                messageEmitter.eventSavingGoalReached(userID, savingGoal.getId(), savingGoal.getName());
+            }
+        }
 
         return candlesticks;
     }
@@ -661,7 +705,7 @@ public class PersistentModel implements Model {
      */
     public ArrayList<PaymentRequest> getPaymentRequests(String sessionID) throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
-        ArrayList<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
+        ArrayList<PaymentRequest> paymentRequests = customORM.getPaymentRequests(userID);
         for (PaymentRequest paymentRequest : paymentRequests) {
             ArrayList<Transaction> transactions = customORM.getTransactionsByPaymentRequest(userID, paymentRequest.getID());
             paymentRequest.setTransactions(transactions);
@@ -676,7 +720,7 @@ public class PersistentModel implements Model {
     /**
      * Method used to create a new PaymentRequest for a certain user.
      *
-     * @param sessionID  The sessionID of the user.
+     * @param sessionID      The sessionID of the user.
      * @param paymentRequest The PaymentRequest object to be used to create the new PaymentRequest.
      * @return The PaymentRequest created by this method.
      */
@@ -705,6 +749,52 @@ public class PersistentModel implements Model {
             e.printStackTrace();
         }
         return createdPaymentRequest;
+    }
+
+    /**
+     * Method used to retrieve the unread UserMessages belonging to a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return An ArrayList of UserMessages belonging to the user with sessionID.
+     */
+    public ArrayList<UserMessage> getUnreadUserMessages(String sessionID) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        return customORM.getUnreadUserMessages(userID);
+    }
+
+    /**
+     * Method used to indicate that a certain UserMessage of a certain user is read.
+     *
+     * @param sessionID     The sessionID of the user.
+     * @param userMessageID The ID of the UserMessage of the certain user that should be marked as read.
+     */
+    public void setUserMessageRead(String sessionID, long userMessageID)
+            throws InvalidSessionIDException, ResourceNotFoundException {
+        int userID = this.getUserID(sessionID);
+
+        UserMessage userMessage = customORM.getUserMessage(userID, userMessageID);
+        if (userMessage != null) {
+            customORM.setUserMessageRead(userID, userMessageID);
+        } else {
+            throw new ResourceNotFoundException();
+        }
+    }
+
+
+    /**
+     * Method used to retrieve the current balance of a certain user.
+     *
+     * @param sessionID The sessionID of the user.
+     * @return The current balance of the user.
+     */
+    private float getBalance(String sessionID) {
+        try {
+            return this.getBalanceHistory(sessionID, IntervalPeriod.HOUR, 1).get(0).getClose();
+        } catch (InvalidSessionIDException e) {
+            // This never happens, because this method will never get called with an invalid session ID.
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     /**
