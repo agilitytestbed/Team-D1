@@ -720,4 +720,50 @@ public class MainRestController {
         }
     }
 
+    /**
+     * Method used to retrieve the unread UserMessages belonging to the user issuing the current request.
+     *
+     * @param pSessionID The sessionID specified in the request parameters.
+     * @param hSessionID The sessionID specified in the HTTP header.
+     * @return A ResponseEntity containing a HTTP status code and either a status message or
+     * an ArrayList of UserMessages belonging to the user issuing the current request.
+     */
+    @RequestMapping(method = RequestMethod.GET,
+            value = RestControllerConstants.URI_PREFIX + "/messages")
+    public ResponseEntity getUnreadUserMessages(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                                @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID) {
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            ArrayList<UserMessage> userMessages = model.getUnreadUserMessages(sessionID);
+            return ResponseEntity.status(200).body(userMessages);
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        }
+    }
+
+    /**
+     * Method used to indicate that a certain UserMessage belonging to the user issuing the current request is read.
+     *
+     * @param pSessionID    The sessionID specified in the request parameters.
+     * @param hSessionID    The sessionID specified in the HTTP header.
+     * @param userMessageID The userMessageID of the UserMessage for which it is indicated that it is read.
+     * @return A ResponseEntity containing a HTTP status code and a status message.
+     */
+    @RequestMapping(method = RequestMethod.PUT,
+            value = RestControllerConstants.URI_PREFIX + "/messages/{userMessageID}")
+    public ResponseEntity putUserMessageRead(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                             @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                             @PathVariable String userMessageID) {
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            long userMessageIDLong = Long.parseLong(userMessageID);
+            model.setUserMessageRead(sessionID, userMessageIDLong);
+            return ResponseEntity.status(200).body("Successful operation");
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        } catch (NumberFormatException | ResourceNotFoundException e) {
+            return ResponseEntity.status(404).body("Resource not found");
+        }
+    }
+
 }
