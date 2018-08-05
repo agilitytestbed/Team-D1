@@ -50,13 +50,14 @@ public class DatabaseConnection {
                     "CREATE TABLE IF NOT EXISTS User_Table(\n" +
                             "  user_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                             "  session_id TEXT,\n" +
+                            "  highest_lifetime_balance FLOAT,\n" +
                             "  highest_transaction_id BIGINT,\n" +
                             "  highest_category_id BIGINT,\n" +
                             "  highest_category_rule_id BIGINT,\n" +
                             "  highest_saving_goal_id BIGINT,\n" +
                             "  highest_payment_request_id BIGINT,\n" +
                             "  highest_user_message_id BIGINT\n" +
-                            ");;"
+                            ");"
             );
             statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS Transaction_Table(\n" +

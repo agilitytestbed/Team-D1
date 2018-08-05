@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS User_Table(
   user_id INTEGER PRIMARY KEY AUTOINCREMENT,
   session_id TEXT,
+  highest_lifetime_balance FLOAT,
   highest_transaction_id BIGINT,
   highest_category_id BIGINT,
   highest_category_rule_id BIGINT,
