@@ -130,7 +130,7 @@ public class PersistentModel implements Model {
 
             if (transaction.getType().equals("deposit")) {
                 // Check if Transaction answers some Payment Request
-                List<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
+                List<PaymentRequest> paymentRequests = customORM.getPaymentRequests(userID);
                 connection.setAutoCommit(false);
                 for (PaymentRequest paymentRequest : paymentRequests) {
                     if (!paymentRequest.getFilled() && transaction.getAmount() == paymentRequest.getAmount() &&
@@ -661,7 +661,7 @@ public class PersistentModel implements Model {
      */
     public ArrayList<PaymentRequest> getPaymentRequests(String sessionID) throws InvalidSessionIDException {
         int userID = this.getUserID(sessionID);
-        ArrayList<PaymentRequest> paymentRequests = customORM.getPaymentRequest(userID);
+        ArrayList<PaymentRequest> paymentRequests = customORM.getPaymentRequests(userID);
         for (PaymentRequest paymentRequest : paymentRequests) {
             ArrayList<Transaction> transactions = customORM.getTransactionsByPaymentRequest(userID, paymentRequest.getID());
             paymentRequest.setTransactions(transactions);

@@ -224,6 +224,32 @@ public class CustomORM {
     public static final String LINK_TRANSACTION_TO_PAYMENT_REQUEST =
             "INSERT INTO Payment_Request_Transaction (user_id, transaction_id, payment_request_id)\n" +
                     "VALUES (?, ?, ?);";
+    public static final String INCREASE_HIGHEST_USER_MESSAGE_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_user_message_id = highest_user_message_id + 1\n" +
+                    "WHERE user_id = ?;\n";
+    public static final String GET_HIGHEST_USER_MESSAGE_ID =
+            "SELECT highest_user_message_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    public static final String GET_USER_MESSAGE =
+            "SELECT user_message_id, message, date, read, type\n" +
+                    "FROM User_Message\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND user_message_id = ?;";
+    public static final String CREATE_USER_MESSAGE =
+            "INSERT INTO User_Message (user_id, user_message_id, message, date, read, type)\n" +
+                    "VALUES (?, ?, ?, ?, 0, ?);";
+    public static final String GET_UNREAD_USER_MESSAGES =
+            "SELECT user_message_id, message, date, read, type\n" +
+                    "FROM User_Message\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND read = 0;";
+    public static final String SET_USER_MESSAGE_READ =
+            "UPDATE User_Message\n" +
+                    "SET read = 1\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND user_message_id = ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -248,9 +274,9 @@ public class CustomORM {
                     "AND t.user_id = ?\n" +
                     "AND t.transaction_id = ?;";
     private static final String CREATE_NEW_USER =
-            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, " +
-                    "highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id)\n" +
-                    "VALUES (?, 0, 0, 0, 0, 0);";
+            "INSERT INTO User_Table (session_id, highest_transaction_id, highest_category_id, highest_category_rule_id, " +
+                    "highest_saving_goal_id, highest_payment_request_id, highest_user_message_id)\n" +
+                    "VALUES (?, 0, 0, 0, 0, 0, 0);";
     private static final String GET_USER_ID =
             "SELECT user_id\n" +
                     "FROM User_Table\n" +
@@ -1132,7 +1158,7 @@ public class CustomORM {
      * @param userID The ID of the user to who the to be retrieved PaymentRequest objects belong.
      * @return An ArrayList of PaymentRequest objects.
      */
-    public ArrayList<PaymentRequest> getPaymentRequest(int userID) {
+    public ArrayList<PaymentRequest> getPaymentRequests(int userID) {
         ArrayList<PaymentRequest> paymentRequests = new ArrayList<>();
         try {
             PreparedStatement statement = connection.prepareStatement(GET_PAYMENT_REQUESTS);
@@ -1215,6 +1241,133 @@ public class CustomORM {
             statement.setInt(1, userID);
             statement.setLong(2, transactionID);
             statement.setLong(3, paymentRequestID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to increase the highestUserMessageID field of a certain user by one in the database.
+     *
+     * @param userID The ID of the user whose highestUserMessageID field should be increased.
+     */
+    public void increaseHighestUserMessageID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_USER_MESSAGE_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestUserMessageID field of a certain user from the database.
+     *
+     * @param userID The ID of the user whose highestUserMessageID field should be retrieved.
+     * @return The value of the highestUserMessageID field of the user with userID.
+     */
+    public long getHighestUserMessageID(int userID) {
+        long highestUserMessageID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_USER_MESSAGE_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestUserMessageID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestUserMessageID;
+    }
+
+    /**
+     * Method used to insert a UserMessage into the database.
+     *
+     * @param userID     The ID of the user to which this new UserMessage will belong.
+     * @param userMessage The UserMessage object to be inserted into the database.
+     */
+    public void createUserMessage(int userID, UserMessage userMessage) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_USER_MESSAGE);
+            statement.setInt(1, userID);
+            statement.setLong(2, userMessage.getID());
+            statement.setString(3, userMessage.getMessage());
+            statement.setString(4, userMessage.getDate());
+            statement.setString(5, userMessage.getType());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a UserMessage from the database.
+     *
+     * @param userID       The id of the user from which a UserMessage should be retrieved.
+     * @param userMessageID The id of the to be retrieved UserMessage.
+     * @return A UserMessage object containing data retrieved from the database.
+     */
+    public UserMessage getUserMessage(int userID, long userMessageID) {
+        UserMessage userMessage = null;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_USER_MESSAGE);
+            statement.setInt(1, userID);
+            statement.setLong(2, userMessageID);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                userMessageID = resultSet.getLong(1);
+                String message = resultSet.getString(2);
+                String date = resultSet.getString(3);
+                boolean read = resultSet.getBoolean(4);
+                String type = resultSet.getString(5);
+                userMessage = new UserMessage(userMessageID, message, date, read, type);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userMessage;
+    }
+
+    /**
+     * Method used to retrieve a batch of unread UserMessage objects belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved UserMessage objects belong.
+     * @return An ArrayList of UserMessage objects.
+     */
+    public ArrayList<UserMessage> getUnreadUserMessages(int userID) {
+        ArrayList<UserMessage> userMessages = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_UNREAD_USER_MESSAGES);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                long userMessageID = resultSet.getLong(1);
+                String message = resultSet.getString(2);
+                String date = resultSet.getString(3);
+                boolean read = resultSet.getBoolean(4);
+                String type = resultSet.getString(5);
+                userMessages.add(new UserMessage(userMessageID, message, date, read, type));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userMessages;
+    }
+
+    /**
+     * Method used to indicate that a certain UserMessage of a certain user has been read.
+     *
+     * @param userID The ID of the user to which the certain UserMessage belongs.
+     * @param userMessageID The ID of the UserMessage for which it should be indicated that it is read.
+     */
+    public void setUserMessageFilled(int userID, long userMessageID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(SET_USER_MESSAGE_READ);
+            statement.setInt(1, userID);
+            statement.setLong(2, userMessageID);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
