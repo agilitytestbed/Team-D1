@@ -196,7 +196,7 @@ public class PersistentModel implements Model {
                 LocalDateTime thirtyDaysAgo = IntervalHelper.toLocalDateTime(transaction.getDate()).minusDays(30);
                 for (Transaction t : transactions) {
                     if (t.getType().equals("withdrawal") && IntervalHelper.isSmallerThan(thirtyDaysAgo, t.getDate())) {
-                        populateCategory(userID, transaction);
+                        populateCategory(userID, t);
                         Category c = t.getCategory();
                         if (c != null) {
                             if (categoryLimits.containsKey(c.getID())) {
