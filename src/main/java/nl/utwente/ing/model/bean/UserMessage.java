@@ -15,7 +15,7 @@ public class UserMessage {
     private String type;
 
     /**
-     * An empty constructor of PaymentRequest.
+     * An empty constructor of UserMessage.
      * Used by the Spring framework.
      */
     public UserMessage() {
