@@ -114,7 +114,7 @@ public class UserMessage {
     /**
      * Method used to retrieve the type of UserMessage.
      *
-     * @return The ID of UserMessage.
+     * @return The type of UserMessage.
      */
     public String getType() {
         return type;
