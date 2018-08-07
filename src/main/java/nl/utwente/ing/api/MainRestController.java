@@ -780,7 +780,8 @@ public class MainRestController {
     public ResponseEntity postMessageRule(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
                                           @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
                                           @RequestBody MessageRule mr) {
-        if (mr == null || mr.getCategory_id() <= 0 || mr.getType() == null || mr.getValue() < 0) {
+        if (mr == null || mr.getCategory_id() <= 0 || mr.getType() == null || mr.getValue() < 0 ||
+                (!mr.getType().equals("info") && !mr.getType().equals("warning"))) {
             return ResponseEntity.status(405).body("Invalid input given");
         }
         try {
