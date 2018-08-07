@@ -201,7 +201,10 @@ public class PersistentModel implements Model {
                         if (c != null && categoryLimits.containsKey(c.getID())) {
                             categoryLimits.put(c.getID(), categoryLimits.get(c.getID()) - t.getAmount());
                             if (categoryLimits.get(c.getID()) < 0) {
-                                messageEmitter.ruleCategoryLimitReached(userID, messageRuleTypes.get(c.getID()), c);
+                                if (transaction.getID() == t.getID()) {
+                                    // Only emit a message if the newly posted Transaction caused the limit to be reached
+                                    messageEmitter.ruleCategoryLimitReached(userID, messageRuleTypes.get(c.getID()), c);
+                                }
                                 categoryLimits.remove(c.getID());
                             }
                         }
