@@ -766,4 +766,31 @@ public class MainRestController {
         }
     }
 
+    /**
+     * Method used to create a new MessageRule for the user issuing the current request.
+     *
+     * @param pSessionID The sessionID specified in the request parameters.
+     * @param hSessionID The sessionID specified in the HTTP header.
+     * @param mr         The MessageRule object as specified in the json HTTP body.
+     * @return A ResponseEntity containing a HTTP status code and either a status message or
+     * the MessageRule created by using this method.
+     */
+    @RequestMapping(method = RequestMethod.POST,
+            value = RestControllerConstants.URI_PREFIX + "/messageRules")
+    public ResponseEntity postMessageRule(@RequestParam(value = "session_id", defaultValue = "") String pSessionID,
+                                          @RequestHeader(value = "X-session-ID", defaultValue = "") String hSessionID,
+                                          @RequestBody MessageRule mr) {
+        if (mr == null || mr.getCategory_id() <= 0 || mr.getType() == null || mr.getValue() < 0 ||
+                (!mr.getType().equals("info") && !mr.getType().equals("warning"))) {
+            return ResponseEntity.status(405).body("Invalid input given");
+        }
+        try {
+            String sessionID = this.getSessionID(pSessionID, hSessionID);
+            MessageRule messageRule = model.postMessageRule(sessionID, mr);
+            return ResponseEntity.status(201).body(messageRule);
+        } catch (InvalidSessionIDException e) {
+            return ResponseEntity.status(401).body("Session ID is missing or invalid");
+        }
+    }
+
 }

@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS User_Table(
   highest_category_rule_id BIGINT,
   highest_saving_goal_id BIGINT,
   highest_payment_request_id BIGINT,
-  highest_user_message_id BIGINT
+  highest_user_message_id BIGINT,
+  highest_message_rule_id BIGINT
 );
 
 CREATE TABLE IF NOT EXISTS Transaction_Table(
@@ -97,5 +98,15 @@ CREATE TABLE IF NOT EXISTS User_Message(
   type TEXT,
   FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
   PRIMARY KEY(user_id, user_message_id)
+);
+
+CREATE TABLE IF NOT EXISTS Message_Rule(
+  user_id INTEGER,
+  message_rule_id BIGINT,
+  category_id BIGINT,
+  type TEXT,
+  value float,
+  FOREIGN KEY(user_id) REFERENCES User_Table(user_id),
+  PRIMARY KEY(user_id, message_rule_id)
 );
 

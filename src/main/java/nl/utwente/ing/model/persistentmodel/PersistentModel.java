@@ -11,9 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The PersistentModel class, an implementation of the Model interface.
@@ -104,6 +102,7 @@ public class PersistentModel implements Model {
         Transaction transaction = null;
         try {
             float oldBalance = this.getBalance(sessionID);
+            String oldDate = customORM.getCurrentDate(userID);
 
             connection.setAutoCommit(false);
             customORM.increaseHighestTransactionID(userID);
@@ -180,6 +179,37 @@ public class PersistentModel implements Model {
             if (newHighestBalance > oldHighestBalance) {
                 // User Message Event: new highest lifetime balance
                 messageEmitter.eventBalanceNewHigh(userID);
+            }
+
+            // Message Rule: Category limit
+            if (IntervalHelper.isSmallerThan(oldDate, transaction.getDate())) {
+                // Transaction is in the future
+                Map<Long, Float> categoryLimits = new HashMap<>();
+                Map<Long, String> messageRuleTypes = new HashMap<>();
+                ArrayList<MessageRule> messageRules = customORM.getMessageRules(userID);
+                for (MessageRule messageRule : messageRules) {
+                    categoryLimits.put(messageRule.getCategory_id(), messageRule.getValue());
+                    messageRuleTypes.put(messageRule.getCategory_id(), messageRule.getType());
+                }
+
+                ArrayList<Transaction> transactions = customORM.getTransactionsAscending(userID);
+                LocalDateTime thirtyDaysAgo = IntervalHelper.toLocalDateTime(transaction.getDate()).minusDays(30);
+                for (Transaction t : transactions) {
+                    if (t.getType().equals("withdrawal") && IntervalHelper.isSmallerThan(thirtyDaysAgo, t.getDate())) {
+                        populateCategory(userID, t);
+                        Category c = t.getCategory();
+                        if (c != null && categoryLimits.containsKey(c.getID())) {
+                            categoryLimits.put(c.getID(), categoryLimits.get(c.getID()) - t.getAmount());
+                            if (categoryLimits.get(c.getID()) < 0) {
+                                if (transaction.getID() == t.getID()) {
+                                    // Only emit a message if the newly posted Transaction caused the limit to be reached
+                                    messageEmitter.ruleCategoryLimitReached(userID, messageRuleTypes.get(c.getID()), c);
+                                }
+                                categoryLimits.remove(c.getID());
+                            }
+                        }
+                    }
+                }
             }
 
         } catch (SQLException e) {
@@ -780,6 +810,31 @@ public class PersistentModel implements Model {
         }
     }
 
+    /**
+     * Method used to create a new MessageRule for a certain user.
+     *
+     * @param sessionID   The sessionID of the user.
+     * @param messageRule The MessageRule object to be used to create the new MessageRule.
+     * @return The MessageRule created by this method.
+     */
+    public MessageRule postMessageRule(String sessionID, MessageRule messageRule) throws InvalidSessionIDException {
+        int userID = this.getUserID(sessionID);
+        MessageRule createdMessageRule = null;
+        try {
+            connection.setAutoCommit(false);
+            customORM.increaseHighestMessageRuleID(userID);
+            long messageRuleID = customORM.getHighestMessageRuleID(userID);
+            connection.commit();
+            connection.setAutoCommit(true);
+
+            messageRule.setID(messageRuleID);
+            customORM.createMessageRule(userID, messageRule);
+            createdMessageRule = customORM.getMessageRule(userID, messageRule.getID());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return createdMessageRule;
+    }
 
     /**
      * Method used to retrieve the current balance of a certain user.

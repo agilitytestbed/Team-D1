@@ -1,6 +1,7 @@
 package nl.utwente.ing.model.persistentmodel;
 
 import nl.utwente.ing.misc.date.IntervalHelper;
+import nl.utwente.ing.model.bean.Category;
 import nl.utwente.ing.model.bean.Transaction;
 import nl.utwente.ing.model.bean.UserMessage;
 
@@ -25,6 +26,8 @@ public class UserMessageEmitter {
     private static final String EVENT_PAYMENT_REQUEST_FILLED = "Payment request filled: ";
     private static final String EVENT_PAYMENT_REQUEST_NOT_FILLED = "Payment request not filled: ";
     private static final String EVENT_SAVING_GOAL_REACHED = "Saving goal reached: ";
+
+    private static final String RULE_CATEGORY_LIMIT_REACHED = "Category limit reached: ";
 
     /**
      * The constructor of UserMessageEmitter.
@@ -128,6 +131,21 @@ public class UserMessageEmitter {
             }
         }
         this.emitUserMessage(userID, "info", message);
+    }
+
+    /**
+     * Method used to emit a UserMessage for a certain user saying that a Category limit as specified by the user
+     * has been reached.
+     *
+     * @param userID            The ID of the user for which the UserMessage will be emitted.
+     * @param type              The type of the to be emitted UserMessage.
+     * @param violatingCategory The Category object for whcih the Category limit as specified by the user
+     *                          has been reached.
+     */
+    public void ruleCategoryLimitReached(int userID, String type, Category violatingCategory) {
+        String message = RULE_CATEGORY_LIMIT_REACHED + violatingCategory.getName() +
+                " (ID = " + violatingCategory.getID() + ").";
+        this.emitUserMessage(userID, type, message);
     }
 
     /**

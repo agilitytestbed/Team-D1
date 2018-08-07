@@ -294,6 +294,31 @@ SET highest_lifetime_balance =
   END
 WHERE user_id = ?;
 
+	increaseHighestMessageRuleID(user_id):
+UPDATE User_Table
+SET highest_message_rule_id = highest_message_rule_id + 1
+WHERE user_id = ?;
+
+	getHighestMessageRuleID(user_id):
+SELECT highest_message_rule_id
+FROM User_Table
+WHERE user_id = ?;
+
+    createMessageRule(user_id, message_rule_id, category_id, type, value):
+INSERT INTO Message_Rule (user_id, message_rule_id, category_id, type, value)
+VALUES (?, ?, ?, ?, ?);
+
+    getMessageRules(user_id):
+SELECT message_rule_id, category_id, type, value
+FROM Message_Rule
+WHERE user_id = ?;
+
+    getMessageRule(user_id, message_rule_id):
+SELECT message_rule_id, category_id, type, value
+FROM Message_Rule
+WHERE user_id = ?
+AND message_rule_id = ?;
+
 	linkTransactionToCategory(user_id, transaction_id, category_id):
 INSERT INTO Transaction_Category (user_id, transaction_id, category_id)
 VALUES (?, ?, ?);
@@ -323,8 +348,8 @@ AND t.user_id = ?
 AND t.transaction_id = ?;
 
 	createNewUser(session_id):
-INSERT INTO User_Table (session_id, highest_lifetime_balance, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id, highest_user_message_id)
-VALUES (?, 0, 0, 0, 0, 0, 0, 0);
+INSERT INTO User_Table (session_id, highest_lifetime_balance, highest_transaction_id, highest_category_id, highest_category_rule_id, highest_saving_goal_id, highest_payment_request_id, highest_user_message_id, highest_message_rule_id)
+VALUES (?, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	getUserID(session_id):
 SELECT user_id

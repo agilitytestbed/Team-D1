@@ -15,7 +15,7 @@ public class UserMessage {
     private String type;
 
     /**
-     * An empty constructor of PaymentRequest.
+     * An empty constructor of UserMessage.
      * Used by the Spring framework.
      */
     public UserMessage() {
@@ -114,7 +114,7 @@ public class UserMessage {
     /**
      * Method used to retrieve the type of UserMessage.
      *
-     * @return The ID of UserMessage.
+     * @return The type of UserMessage.
      */
     public String getType() {
         return type;
