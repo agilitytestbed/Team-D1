@@ -265,4 +265,14 @@ public interface Model {
      */
     void setUserMessageRead(String sessionID, long userMessageID)
             throws InvalidSessionIDException, ResourceNotFoundException;
+
+    /**
+     * Method used to create a new MessageRule for a certain user.
+     *
+     * @param sessionID   The sessionID of the user.
+     * @param messageRule The MessageRule object to be used to create the new MessageRule.
+     * @return The MessageRule created by this method.
+     */
+    MessageRule postMessageRule(String sessionID, MessageRule messageRule) throws InvalidSessionIDException;
+
 }
