@@ -198,12 +198,14 @@ public class PersistentModel implements Model {
                     if (t.getType().equals("withdrawal") && IntervalHelper.isSmallerThan(thirtyDaysAgo, t.getDate())) {
                         populateCategory(userID, transaction);
                         Category c = t.getCategory();
-                        if (categoryLimits.containsKey(c.getID())) {
-                            categoryLimits.put(c.getID(), categoryLimits.get(c.getID()) - t.getAmount());
-                        }
-                        if (categoryLimits.get(c.getID()) < 0) {
-                            messageEmitter.ruleCategoryLimitReached(userID, messageRuleTypes.get(c.getID()), c);
-                            categoryLimits.remove(c.getID());
+                        if (c != null) {
+                            if (categoryLimits.containsKey(c.getID())) {
+                                categoryLimits.put(c.getID(), categoryLimits.get(c.getID()) - t.getAmount());
+                            }
+                            if (categoryLimits.get(c.getID()) < 0) {
+                                messageEmitter.ruleCategoryLimitReached(userID, messageRuleTypes.get(c.getID()), c);
+                                categoryLimits.remove(c.getID());
+                            }
                         }
                     }
                 }
