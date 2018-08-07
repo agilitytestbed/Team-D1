@@ -266,6 +266,26 @@ public class CustomORM {
                     "    ELSE highest_lifetime_balance \n" +
                     "  END\n" +
                     "WHERE user_id = ?;";
+    private static final String INCREASE_HIGHEST_MESSAGE_RULE_ID =
+            "UPDATE User_Table\n" +
+                    "SET highest_message_rule_id = highest_message_rule_id + 1\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_HIGHEST_MESSAGE_RULE_ID =
+            "SELECT highest_message_rule_id\n" +
+                    "FROM User_Table\n" +
+                    "WHERE user_id = ?;";
+    private static final String CREATE_MESSAGE_RULE =
+            "INSERT INTO Message_Rule (user_id, message_rule_id, category_id, type, value)\n" +
+                    "VALUES (?, ?, ?, ?, ?);";
+    private static final String GET_MESSAGE_RULES =
+            "SELECT message_rule_id, category_id, type, value\n" +
+                    "FROM Message_Rule\n" +
+                    "WHERE user_id = ?;";
+    private static final String GET_MESSAGE_RULE =
+            "SELECT message_rule_id, category_id, type, value\n" +
+                    "FROM Message_Rule\n" +
+                    "WHERE user_id = ?\n" +
+                    "AND message_rule_id = ?;";
     private static final String LINK_TRANSACTION_TO_CATEGORY =
             "INSERT INTO Transaction_Category (user_id, transaction_id, category_id)\n" +
                     "VALUES (?, ?, ?);";
@@ -292,8 +312,8 @@ public class CustomORM {
     private static final String CREATE_NEW_USER =
             "INSERT INTO User_Table (session_id, highest_lifetime_balance, highest_transaction_id, " +
                     "highest_category_id, highest_category_rule_id, highest_saving_goal_id, " +
-                    "highest_payment_request_id, highest_user_message_id)\n" +
-                    "VALUES (?, 0, 0, 0, 0, 0, 0, 0);";
+                    "highest_payment_request_id, highest_user_message_id, highest_message_rule_id)\n" +
+                    "VALUES (?, 0, 0, 0, 0, 0, 0, 0, 0);";
     private static final String GET_USER_ID =
             "SELECT user_id\n" +
                     "FROM User_Table\n" +
@@ -1459,6 +1479,113 @@ public class CustomORM {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Method used to increase the highestMessageRuleID field of a certain user by one in the database.
+     *
+     * @param userID The ID of the user whose highestMessageRuleID field should be increased.
+     */
+    public void increaseHighestMessageRuleID(int userID) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INCREASE_HIGHEST_MESSAGE_RULE_ID);
+            statement.setInt(1, userID);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve the highestMessageRuleID field of a certain user from the database.
+     *
+     * @param userID The ID of the user whose highestMessageRuleID field should be retrieved.
+     * @return The value of the highestMessageRuleID field of the user with userID.
+     */
+    public long getHighestMessageRuleID(int userID) {
+        long highestMessageRuleID = -1;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_HIGHEST_MESSAGE_RULE_ID);
+            statement.setInt(1, userID);
+            ResultSet rs = statement.executeQuery();
+            highestMessageRuleID = rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return highestMessageRuleID;
+    }
+
+    /**
+     * Method used to insert a MessageRule into the database.
+     *
+     * @param userID      The ID of the user to which this new MessageRule will belong.
+     * @param messageRule The MessageRule object to be inserted into the database.
+     */
+    public void createMessageRule(int userID, MessageRule messageRule) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(CREATE_MESSAGE_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, messageRule.getID());
+            statement.setLong(3, messageRule.getCategory_id());
+            statement.setString(4, messageRule.getType());
+            statement.setFloat(5, messageRule.getValue());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method used to retrieve a batch of MessageRule objects belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved MessageRule objects belong.
+     * @return An ArrayList of MessageRule objects.
+     */
+    public ArrayList<MessageRule> getMessageRules(int userID) {
+        ArrayList<MessageRule> messageRules = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_MESSAGE_RULES);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                long messageRuleID = resultSet.getLong(1);
+                long categoryID = resultSet.getLong(2);
+                String type = resultSet.getString(3);
+                float value = resultSet.getFloat(4);
+                messageRules.add(new MessageRule(messageRuleID, categoryID, type, value));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messageRules;
+    }
+
+    /**
+     * Method used to retrieve a MessageRule object belonging to a certain user from the database.
+     *
+     * @param userID The ID of the user to who the to be retrieved MessageRule object belongs.
+     * @return An MessageRule object.
+     */
+    public MessageRule getMessageRule(int userID, long messageRuleID) {
+        MessageRule messageRule = null;
+        try {
+            PreparedStatement statement = connection.prepareStatement(GET_MESSAGE_RULE);
+            statement.setInt(1, userID);
+            statement.setLong(2, messageRuleID);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                messageRuleID = resultSet.getLong(1);
+                long categoryID = resultSet.getLong(2);
+                String type = resultSet.getString(3);
+                float value = resultSet.getFloat(4);
+                messageRule = new MessageRule(messageRuleID, categoryID, type, value);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messageRule;
     }
 
     /**
